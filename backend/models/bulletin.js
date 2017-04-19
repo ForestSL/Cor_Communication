@@ -1,9 +1,11 @@
 var mongoose = require('mongoose');
+//var DepartSchema = new mongoose.Schema;
 
 //数据模型BulletinSchema
 var BulletinSchema = new mongoose.Schema({
+  receiveID: Number,//接受公告的部门ID，引用DepartSchema中的departID
   content: String,
-  receiveID: String,//接受公告的部门ID，引用DepartSchema中的departID
+  time: String,//根据时间判断是否删除公告
   create_at: {
     type: Date,
     default: Date.now
