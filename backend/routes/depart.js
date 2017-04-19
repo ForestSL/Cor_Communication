@@ -26,4 +26,17 @@ router.get("/", function(req, res, next){
 	})
 });
 
+//删除指定ID部门
+router.delete("/", function(req, res, next){
+	var depart=req.body;
+	Depart.remove({ departID: depart.departID}, function(err, departs){
+		if(err){
+			return res.status(400).send("err in get /depart");
+		}else{
+			console.log("删除成功");
+			return res.status(200).json("删除成功");
+		}
+	})
+});
+
 module.exports = router;

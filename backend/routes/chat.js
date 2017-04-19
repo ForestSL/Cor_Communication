@@ -29,9 +29,9 @@ router.get("/", function(req, res, next){
 });
 
 //根据发送者ID接受者ID确定删除内容（用户自主执行）
-//只能整体删除 要支持根据ID删除？？？
 router.delete("/", function(req, res, next){
-	Chat.remove({}, function(err, chats){
+	var chat=req.body;
+	Chat.remove({sendId:chat.sendId,receiveId:chat.receiveId}, function(err, chats){
 		if(err){
 			return res.status(400).send("err in get /chat");
 		}else{
