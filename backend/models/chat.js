@@ -2,9 +2,10 @@ var mongoose = require('mongoose');
 
 //数据模型ChatSchema
 var ChatSchema = new mongoose.Schema({
-  receiveID: [Number],//接受者可以是一个，也可以是一个部门所有成员（群聊）,引用UserSchema中的userID
+  sendID: Number,
+  receiveID: Number,//接受者可以是一个，也可以是一个部门所有成员（群聊）,引用UserSchema中的userID
   content: String,
-  //picture: String,//图片（可发送一或多张图片或不发）
+  picture: Buffer,//图片（可发送一或多张图片或不发）
   create_at: {//发送时间
     type: Date,
     default: Date.now

@@ -8,8 +8,8 @@ var UserSchema = new mongoose.Schema({
   userName: String,
   userPhone: String,
   userPwd: String,
-  userDepart: Number,//引用DepartSchema中的DepartId
-  chatInfo: ChatSchema,//引用ChatSchema
+  userDepart: Number,//部门ID引用
+  isLeader: Number,//部长部门ID，普通部员为0
   create_at: {
     type: Date,
     default: Date.now

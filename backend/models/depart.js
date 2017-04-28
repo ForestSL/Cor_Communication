@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 var DepartSchema = new mongoose.Schema({
   departID: Number,
   departName: String,
-  parentDepart: Number,//父部门 引用DepartSchema中的departID
+  parent: Number,//引用部门ID
   create_at: {
     type: Date,
     default: Date.now

@@ -9,7 +9,7 @@ router.post("/", function(req, res, next){//req:部门ID、公告内容、时间
 		if (err) {
 			return res.status(400).send("err in post /bulletin");
 		} else {
-			return res.status(200).json("success");
+			return res.status(200).json("success");//res
 		}
 	});
 });
@@ -47,7 +47,7 @@ router.delete("/", function(req, res, next){//req:公告时间
 			return res.status(400).send("err in get /bulletin");
 		}else{
 			console.log("删除成功");
-			return res.status(200).json("success");
+			return res.status(200).json("success");//res
 		}
 	})
 });
