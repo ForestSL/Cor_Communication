@@ -2,7 +2,10 @@ var mongoose = require('mongoose');
 
 //数据模型DepartSchema
 var DepartSchema = new mongoose.Schema({
-  departID: Number,
+  departID: {
+  	type: Number,
+  	unique: true
+  },
   departName: String,
   parent: Number,//引用部门ID
   create_at: {

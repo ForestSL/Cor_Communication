@@ -3,7 +3,7 @@ var router = express.Router();//定义router获取Router()方法库
 var Bulletin = require('../models/bulletin');//定义Bulletin获取之前建立的Bulletin数据模型
 
 //新建公告：管理员
-router.post("/", function(req, res, next){//req:部门ID、公告内容、时间
+router.post("/", function(req, res, next){//req:部门名称、公告名称、公告内容、时间
 	var bulletin = req.body;
 	Bulletin.create(bulletin, function(err, bulletin){
 		if (err) {
@@ -29,7 +29,7 @@ router.get("/", function(req, res, next){//无参数
 //查找公告：用户
 router.post("/search", function(req, res, next){//req:部门ID
 	var bulletin = req.body;
-	Bulletin.find({ receiveID: bulletin.receiveID}, function(err, bulletins){
+	Bulletin.find({ departName: bulletin.departName}, function(err, bulletins){
 		if(err){
 			return res.status(400).send("err in get /bulletin");
 		}else{
@@ -40,7 +40,7 @@ router.post("/search", function(req, res, next){//req:部门ID
 });
 
 //删除公告：管理员
-router.delete("/", function(req, res, next){//req:公告时间
+router.post("/delete", function(req, res, next){//req:公告时间
 	var bulletin = req.body;
 	Bulletin.remove({ time: bulletin.time }, function(err, bulletins){
 		if(err){

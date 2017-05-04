@@ -4,7 +4,10 @@ var ChatSchema = new mongoose.Schema;
 
 //数据模型UserSchema
 var UserSchema = new mongoose.Schema({
-  userID: Number,
+  userID: {
+    type: Number,
+    unique: true
+  },
   userName: String,
   userPhone: String,
   userPwd: String,

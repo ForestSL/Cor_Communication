@@ -3,9 +3,13 @@ var mongoose = require('mongoose');
 
 //数据模型BulletinSchema
 var BulletinSchema = new mongoose.Schema({
-  receiveID: Number,//部门ID引用
+  departName: String,
+  name: String,//公告名字
   content: String,
-  time: String,//根据时间判断是否删除公告
+  time: { //根据时间判断是否删除公告
+  	type: String,
+  	unique: true
+  },
   create_at: {
     type: Date,
     default: Date.now

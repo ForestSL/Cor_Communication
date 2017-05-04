@@ -15,10 +15,9 @@ var cors = require('cors');
 var user = require('./routes/user');
 //声明部门模型
 var depart = require('./routes/depart');
-//声明聊天模型
-var chat = require('./routes/chat');
 //声明公告模型
 var bulletin = require('./routes/bulletin');
+var admin = require('./routes/admin');
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/3a_info', function(err) {
@@ -49,10 +48,9 @@ app.use(cors());//使用跨域请求库
 app.use('/user', user);
 //使用部门模型
 app.use('/depart', depart);
-//使用聊天模型
-app.use('/chat', chat);
 //使用公告模型
 app.use('/bulletin', bulletin);
+app.use('/admin', admin);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
