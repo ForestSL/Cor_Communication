@@ -4,7 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var swaggerJSDoc = require('swagger-jsdoc');
+var swaggerJSDoc = require('swagger-jsdoc');//swagger ui
 
 var index = require('./routes/index');
 var users = require('./routes/users');
