@@ -2,7 +2,10 @@ var mongoose = require('mongoose');
 
 //数据模型AdminSchema
 var AdminSchema = new mongoose.Schema({
-  adminPhone: String,
+  adminPhone: {
+    type: String,
+    unique: true
+  },
   adminPwd: String,
   create_at: {
     type: Date,
