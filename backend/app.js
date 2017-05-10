@@ -29,6 +29,7 @@ mongoose.connect('mongodb://localhost/3a_info', function(err) {
   }
 });
 
+//swagger网站访问http://115.159.38.100:3000/swagger.json
 // swagger definition
 var swaggerDefinition = {
   info: {
@@ -36,8 +37,8 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: '企业内部沟通后台API设计',
   },
-  //host: '115.159.38.100:3000',
-  host: 'localhost:3000',
+  host: '115.159.38.100:3000',
+  //host: 'localhost:3000',
   //basePath: 'http://115.159.38.100:3000',
   basePath: '/',
 };

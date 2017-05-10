@@ -32,19 +32,26 @@ var Admin = require('../models/admin');//定义User获取之前建立的User数�
  *           $ref: '#/definitions/Admin'
  *     responses:
  *       200:
- *         description: success
+ *         description: success/exist
  *       400:
  *         description: err in post /admin
  */
-router.post("/", function(req, res, next){//req:
+router.post("/", function(req, res, next){//req
 	var admin = req.body;
-	Admin.create(admin, function(err, admin){
-		if (err) {
-			return res.status(400).send("err in post /admin");
-		} else {
-			return res.status(200).json("success");//res
-		}
-	});
+	Admin.findOne({ adminPhone: admin.adminPhone}, function(err, admins){//先看是否已经存在该部门
+		if(admins==null){
+			Admin.create(admin, function(err, admin){
+				if (err) {
+					return res.status(400).send("err in post /admin");
+				} else {
+					return res.status(200).json("success");//res
+				}
+			})
+ 		}
+		else{
+			return res.status(200).json("exist");//res:已经存在
+		}		
+ 	})
 });
 
 /**
