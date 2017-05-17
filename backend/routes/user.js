@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var User = require('../models/user');//定义User获取之前建立的User数据模型
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
+var Task = require('../models/task');
 
 /**
  * @swagger
@@ -308,5 +309,47 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 	})
 });
 
+/**
+ * @swagger
+ * /user/task/author:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: 当前用户提交的任务情况
+ *     description: 根据提交者ID查看任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user(userID)
+ *         description: User object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/User'
+ *     responses:
+ *       200:
+ *         description: 返回该用户提交的任务
+ *         schema:
+ *           $ref: '#/definitions/Task'
+ */
+//用户查看所有自己提交的任务情况：根据userID=authorID(用户ID与发起任务发起者ID相同的人)查看公告
+router.post("/task/author", function(req, res, next){//req:userID
+	var user=req.body;
+	Task.find({ authorID: user.userID }, function(err, tasks){
+		if(err){
+			return res.status(400).send("err in post /task");
+		}else{
+			console.log(tasks);
+			return res.status(200).json(tasks);//res
+		}
+	})
+});
+
+//用户查看自己待处理的任务：请假(taskID=1，自己是部长且task中authorDepart是自己部门的任务)
+//工作(taskID=2，自己是部员且有发布到自己部门的任务)
+router.post("/handle",function(req,res,next){
+	
+	
+});
 
 module.exports = router;

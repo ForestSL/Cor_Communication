@@ -19,6 +19,7 @@ var depart = require('./routes/depart');
 //声明公告模型
 var bulletin = require('./routes/bulletin');
 var admin = require('./routes/admin');
+var task = require('./routes/task');
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/3a_info', function(err) {
@@ -77,6 +78,7 @@ app.use('/depart', depart);
 //使用公告模型
 app.use('/bulletin', bulletin);
 app.use('/admin', admin);
+app.use('/task', task);
 
 // serve swagger
 app.get('/swagger.json', function(req, res) {
