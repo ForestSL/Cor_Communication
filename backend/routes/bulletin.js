@@ -72,7 +72,7 @@ router.get("/", function(req, res, next){//无参数
 		if(err){
 			return res.status(400).send("err in get /bulletin");
 		}else{
-			console.log(bulletins);
+			console.log(Bulletin.count());
 			return res.status(200).json(bulletins);//res:返回所有公告
 		}
 	})

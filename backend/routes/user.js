@@ -303,7 +303,7 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 			}
 			else{
 				console.log("登录成功");
-				return res.status(200).json("success");//res
+				return res.status(200).json(users);//res
 			}
 		}
 	})

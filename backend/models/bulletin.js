@@ -7,12 +7,8 @@ var BulletinSchema = new mongoose.Schema({
   name: String,//公告名字
   content: String,
   time: { //根据时间判断是否删除公告
-  	type: String,
+  	type: Date,
   	unique: true
-  },
-  create_at: {
-    type: Date,
-    default: Date.now
   }
 });
 

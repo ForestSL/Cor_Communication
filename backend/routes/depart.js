@@ -132,4 +132,40 @@ router.post("/delete", function(req, res, next){//req:待删除部门ID
 	})
 });
 
+/**
+ * @swagger
+ * /depart/search:
+ *   post:
+ *     tags:
+ *       - Depart
+ *     summary: 查询部门名称
+ *     description: 根据部门ID查找部门名
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: depart(departID)
+ *         description: Depart object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Depart'
+ *     responses:
+ *       200:
+ *         description: 返回部门名称
+ *         schema:
+ *           $ref: '#/definitions/Depart'
+ */
+//根据部门ID返回部门名称
+router.post("/search", function(req, res, next){//req:部门ID
+	var depart=req.body;
+	Depart.find({ departID: depart.departID }, function(err, departs){
+		if(err){
+			return res.status(400).send("err in post /depart");
+		}else{
+			console.log(departs);
+			return res.status(200).json(departs);//res:ID、姓名、电话、密码、部门、是否部长、聊天信息
+		}
+	})
+});
+
 module.exports = router;
