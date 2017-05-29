@@ -3,13 +3,11 @@ var mongoose = require('mongoose');
 
 //数据模型BulletinSchema
 var BulletinSchema = new mongoose.Schema({
+  departID: Number,
   departName: String,
   name: String,//公告名字
   content: String,
-  time: { //根据时间判断是否删除公告
-  	type: Date,
-  	unique: true
-  }
+  time: String
 });
 
 //数据模型BulletinSchema通过Bulletin方法名，可被其他module调用

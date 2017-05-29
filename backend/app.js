@@ -20,6 +20,14 @@ var depart = require('./routes/depart');
 var bulletin = require('./routes/bulletin');
 var admin = require('./routes/admin');
 var task = require('./routes/task');
+var test = require('./routes/test');
+//var mylib = require('./routes/mylib');
+
+//声明要用的融云模块
+var rongcloudSDK = require( 'rongcloud-sdk' );
+//初始化
+rongcloudSDK.init( '0vnjpoad0cfoz', '0CIgItfwjE9jGZ' );
+
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/3a_info', function(err) {
@@ -79,6 +87,8 @@ app.use('/depart', depart);
 app.use('/bulletin', bulletin);
 app.use('/admin', admin);
 app.use('/task', task);
+app.use('/test', test);
+//app.use('/mylib', mylib);
 
 // serve swagger
 app.get('/swagger.json', function(req, res) {

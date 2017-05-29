@@ -3,7 +3,7 @@ var router = express.Router();//定义router获取Router()方法库
 var User = require('../models/user');//定义User获取之前建立的User数据模型
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
 var Task = require('../models/task');
-
+var rongcloudSDK = require( 'rongcloud-sdk' );
 /**
  * @swagger
  * definition:
@@ -13,12 +13,18 @@ var Task = require('../models/task');
  *         type: number
  *       userName:
  *         type: string
+ *       userToken:
+ *         type: string
+ *       userPicture:
+ *         type: string
  *       userPhone:
  *         type: string
  *       userPwd:
  *         type: string
  *       userDepart:
  *         type: number
+ *       DepartName:
+ *         type: string
  *       isLeader:
  *         type: number
  */
@@ -47,8 +53,21 @@ var Task = require('../models/task');
 //新建用户：管理员
 router.post("/", function(req, res, next){//req:ID、姓名、电话、密码、部门、是否部长、聊天信息
 	var user = req.body;
-	User.findOne({ userPhone: user.userPhone}, function(err, users){//根据帐号（电话）先看是否已经存在该用户
-		if(users==null){
+	rongcloudSDK.user.getToken( user.userID, user.userName, user.userPicture, function( err, resultText ) {
+  		if( err ) {
+    		console.log("Error in getToken");
+  		}
+  		else {
+   		 var result = JSON.parse( resultText );
+    	if( result.code == 200 ) {
+     		 //Handle the result.token
+     		 console.log(60);
+     		 console.log(user.userToken);
+     		 user.userToken=result.token;
+
+
+      		User.findOne({ userPhone: user.userPhone}, function(err, users){//根据帐号（电话）先看是否已经存在该用户
+			if(users==null){
 			Depart.findOne({ departID: user.userDepart}, function(err, departs){//先看是否有该部门
 				if(departs==null){
 					return res.status(200).json("no depart");//res:没有该部门
@@ -57,16 +76,25 @@ router.post("/", function(req, res, next){//req:ID、姓名、电话、密码、
 						if (err) {
 							return res.status(400).send("err in post /user");
 						} else {
+							console.log(78);
 							return res.status(200).json("success");//res
 						}
 					})
 				}
 			})
+
+
+			
  		}
 		else{
 			return res.status(200).json("exist");//res:已经存在该用户
 		}		
  	})
+   		 }
+  		}
+		} )
+
+	
 });
 
 /**
