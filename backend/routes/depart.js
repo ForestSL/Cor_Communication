@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
 var User = require('../models/user');//定义User获取之前建立的User数据模型
-var departNum=20;
+var Count = require('../models/count');
+
 /**
  * @swagger
  * definition:
@@ -12,8 +13,10 @@ var departNum=20;
  *         type: number
  *       departName:
  *         type: string
- *       parent:
+ *       parentID:
  *         type: number
+ *       parentName:
+ *         type: string
  */
 
  /**
@@ -22,12 +25,12 @@ var departNum=20;
  *   post:
  *     tags:
  *       - Depart
- *     summary: 新建部门
+ *     summary: 管理员在后台增加部门
  *     description: 创建新的部门
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: depart
+ *       - name: depart(departName,parentName)
  *         description: Depart object
  *         in: body
  *         required: true
@@ -38,19 +41,38 @@ var departNum=20;
  *         description: 创建成功
  */
 //新建部门：管理员
-router.post("/", function(req, res, next){//req:部门ID、名字、父部门ID
+router.post("/", function(req, res, next){//req:部门名字(后台自动生成ID)、父部门名字(后台判断ID)
 	var depart = req.body;
-	departNum = departNum+1;
-	depart.departID = departNum;
-	console.log(depart.departID);
 	Depart.findOne({ departName: depart.departName}, function(err, departs){//先看是否已经存在该部门
 		if(departs==null){
-			Depart.create(depart, function(err, depart){
-				if (err) {
-					return res.status(400).send("err in post /depart");
-				} else {
-					return res.status(200).json("success");//res
+			//查找部门ID当前数量
+			Count.findOne({}, function(err, counts){
+				//Count.departNum = Count.departNum+1;//部门数加一
+				depart.departID = counts.departNum+1;//获得部门ID
+				//console.log(Count.departNum);
+
+				//更新部门Num
+				Count.update({},{departNum:counts.departNum+1}, function(err, result){
+					console.log("部门ID加一");
+				})
+			})
+
+			//根据父部门名字查找父部门ID
+			Depart.findOne({ departName: depart.parentName},function(err, result){
+				if(result==null){
+					depart.parentID=0;
+				}else{
+				depart.parentID=result.departID;//获得父部门ID
 				}
+				console.log(depart);
+
+				Depart.create(depart, function(err, depart){
+					if (err) {
+						return res.status(400).send("err in post /depart");
+					} else {
+						return res.status(200).json("success");//res
+					}
+				})
 			})
  		}
 		else{
@@ -65,7 +87,7 @@ router.post("/", function(req, res, next){//req:部门ID、名字、父部门ID
  *   get:
  *     tags:
  *       - Depart
- *     summary: 返回所有部门
+ *     summary: 返回所有部门对象信息
  *     description: 返回所有部门
  *     produces:
  *       - application/json
@@ -93,12 +115,12 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - Depart
- *     summary: 根据ID删除部门
- *     description: 根据ID删除部门
+ *     summary: 管理员在后台根据部门名称删除部门
+ *     description: 删除部门
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: depart(departID)
+ *       - name: depart(departName)
  *         description: Depart object
  *         in: body
  *         required: true
@@ -106,32 +128,133 @@ router.get("/", function(req, res, next){//无参数
  *           $ref: '#/definitions/Depart'
  *     responses:
  *       200:
- *         description: success/exist user/exist children
+ *         description: success/exist user/exist children/no depart
  */
 //删除部门：管理员
 //删除部门的子部门以及部门内员工的处理
-router.post("/delete", function(req, res, next){//req:待删除部门ID
+router.post("/delete", function(req, res, next){//req:待删除部门名称
 	var depart=req.body;
-	Depart.findOne({ parent: depart.departID}, function(err, departs){//先看是否有其他部门的父部门是该删除的部门
-		if(departs==null){
-			User.findOne({ userDepart: depart.departID}, function(err, users){//先看删除部门内是否还有员工
-				if(users==null){
-		 			Depart.remove({ departID: depart.departID}, function(err, departs){
-						if(err){
-							return res.status(400).send("err in post /depart");
-						}else{
-							console.log("删除成功");
-							return res.status(200).json("success");//res
-						}
-					})
-		 		}
-		 		else{
-		 			return res.status(200).json("exist user");//res:存在员工，先处理员工
-		 		}
- 			})
- 		}else{
- 			return res.status(200).json("exist children");//res:存在子部门，先处理子部门
- 		}
+	Depart.findOne({ departName: depart.departName},function(err, result){	
+		if(result==null){
+			console.log("没有该部门");
+			return res.status(200).json("no depart");
+		}else{
+			//获得部门ID
+			depart.departID=result.departID;
+			Depart.findOne({ parentID: depart.departID}, function(err, departs){//先看是否有其他部门的父部门是该删除的部门
+				if(departs==null){
+					User.findOne({ userDepart: depart.departID}, function(err, users){//先看删除部门内是否还有员工
+						if(users==null){
+		 					Depart.remove({ departID: depart.departID}, function(err, departs){
+								if(err){
+									return res.status(400).send("err in post /depart");
+								}else{
+									console.log("删除成功");
+									return res.status(200).json("success");//res
+								}
+							})
+		 				}
+		 				else{
+		 					return res.status(200).json("exist user");//res:存在员工，先处理员工
+		 				}
+ 					})
+ 				}else{
+ 					return res.status(200).json("exist children");//res:存在子部门，先处理子部门
+ 				}
+			})
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /depart/search/first:
+ *   get:
+ *     tags:
+ *       - Depart
+ *     summary: 返回给web端一级部门
+ *     description: 查找一级部门
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 子部门对象信息
+ */
+//组织树信息返回，根据部门名称返回该部门子部门
+router.get("/search/first", function(req, res, next){
+	Depart.find({ parentID: 0 }, function(err, departs){
+		if(err){
+			return res.status(400).send("err in post /depart");
+		}else{
+			console.log(departs);
+			return res.status(200).json(departs);//res:所有一级部门
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /depart/search/children:
+ *   post:
+ *     tags:
+ *       - Depart
+ *     summary: 管理员在后台根据部门名称返回该部门子部门
+ *     description: 查找子部门
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: depart(departName)
+ *         description: Depart object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Depart'
+ *     responses:
+ *       200:
+ *         description: 子部门对象信息
+ */
+//组织树信息返回，根据部门名称返回该部门子部门
+router.post("/search/children", function(req, res, next){//req:部门名(作为父部门)
+	var depart=req.body;
+	Depart.findOne({ parentName:depart.departName }, function(err, departs){
+		if(err){
+			return res.status(400).send("err in post /depart");
+		}else{
+			if(departs==null){
+				console.log("空");
+				return res.status(200).json("null");
+			}else{
+				Depart.find({ parentName:depart.departName }, function(err, results){
+					console.log(results);
+					return res.status(200).json(results);//res:该父部门下所有子部门
+				})
+			}
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /depart:
+ *   delete:
+ *     tags:
+ *       - Depart
+ *     summary: 开发人员进行数据测试删除所有数据
+ *     description: 删除信息
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: success
+ */
+//删除所有部门信息（开发者测试数据使用）
+router.delete("/", function(req, res, next){
+	Depart.remove({}, function(err, departs){
+		if(err){
+			return res.status(400).send("err in delete /depart");
+		}else{
+			return res.status(200).json("success");
+		}
 	})
 });
 

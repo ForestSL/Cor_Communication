@@ -9,13 +9,21 @@ var UserSchema = new mongoose.Schema({
     unique: true
   },
   userName: String,
-  userToken:String,
   userPicture:String,
   userPhone: String,
   userPwd: String,
-  userDepart: Number,//部门ID引用
-  DepartName: String,
-  isLeader: Number,//部长部门ID，普通部员为0
+  userDepart: {
+    type: Number,
+    default: 0
+  },//部门ID引用
+  DepartName: {
+    type: String,
+    default: "null"
+  },//以后直接添加到部门中
+  isLeader: {
+    type: Number,
+    default: 0
+  },//部长部门ID，普通部员为0
   create_at: {
     type: Date,
     default: Date.now

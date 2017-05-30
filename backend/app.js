@@ -22,6 +22,7 @@ var admin = require('./routes/admin');
 var task = require('./routes/task');
 var test = require('./routes/test');
 //var mylib = require('./routes/mylib');
+var count = require('./routes/count');
 
 //声明要用的融云模块
 var rongcloudSDK = require( 'rongcloud-sdk' );
@@ -89,6 +90,7 @@ app.use('/admin', admin);
 app.use('/task', task);
 app.use('/test', test);
 //app.use('/mylib', mylib);
+app.use('/count', count);
 
 // serve swagger
 app.get('/swagger.json', function(req, res) {

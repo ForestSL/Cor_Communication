@@ -3,7 +3,8 @@ var router = express.Router();//定义router获取Router()方法库
 var User = require('../models/user');//定义User获取之前建立的User数据模型
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
 var Task = require('../models/task');
-var rongcloudSDK = require( 'rongcloud-sdk' );
+var Count = require('../models/count');
+
 /**
  * @swagger
  * definition:
@@ -12,8 +13,6 @@ var rongcloudSDK = require( 'rongcloud-sdk' );
  *       userID:
  *         type: number
  *       userName:
- *         type: string
- *       userToken:
  *         type: string
  *       userPicture:
  *         type: string
@@ -35,12 +34,12 @@ var rongcloudSDK = require( 'rongcloud-sdk' );
  *   post:
  *     tags:
  *       - User
- *     summary: 新建用户
+ *     summary: 管理员后台添加新用户
  *     description: 创建新的用户
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: user
+ *       - name: user(userName、userPhone、userPwd、DepartName、userPicture)
  *         description: User object
  *         in: body
  *         required: true
@@ -48,53 +47,47 @@ var rongcloudSDK = require( 'rongcloud-sdk' );
  *           $ref: '#/definitions/User'
  *     responses:
  *       200:
- *         description: 创建成功
+ *         description: exist/no depart/success
  */
 //新建用户：管理员
-router.post("/", function(req, res, next){//req:ID、姓名、电话、密码、部门、是否部长、聊天信息
+router.post("/", function(req, res, next){//req:姓名、电话、密码、头像
 	var user = req.body;
-	rongcloudSDK.user.getToken( user.userID, user.userName, user.userPicture, function( err, resultText ) {
-  		if( err ) {
-    		console.log("Error in getToken");
-  		}
-  		else {
-   		 var result = JSON.parse( resultText );
-    	if( result.code == 200 ) {
-     		 //Handle the result.token
-     		 console.log(60);
-     		 console.log(user.userToken);
-     		 user.userToken=result.token;
-
-
-      		User.findOne({ userPhone: user.userPhone}, function(err, users){//根据帐号（电话）先看是否已经存在该用户
-			if(users==null){
-			Depart.findOne({ departID: user.userDepart}, function(err, departs){//先看是否有该部门
-				if(departs==null){
-					return res.status(200).json("no depart");//res:没有该部门
-				}else{
-					User.create(user, function(err, user){
-						if (err) {
-							return res.status(400).send("err in post /user");
-						} else {
-							console.log(78);
-							return res.status(200).json("success");//res
-						}
-					})
-				}
+    User.findOne({ userPhone: user.userPhone}, function(err, users){//根据帐号（电话）先看是否已经存在该用户
+		if(users==null){
+			//查找部门ID当前数量
+			Count.findOne({}, function(err, counts){
+				user.userID = counts.userNum+1;//获得userID
+				console.log(user.userID);
+				//更新用户Num
+				Count.update({},{userNum:counts.userNum+1}, function(err, result){
+					console.log("用户ID加一");
+				})
 			})
 
-
-			
- 		}
-		else{
+			User.create(user, function(err, user){
+			    if (err) {
+					return res.status(400).send("err in post /user");
+				} else {
+					//console.log(78);
+					return res.status(200).json("success");//res
+				}
+			})
+ 		}else{
 			return res.status(200).json("exist");//res:已经存在该用户
-		}		
- 	})
-   		 }
-  		}
-		} )
+		}	
+	})	
+});
 
-	
+//删除所有信息（测试用）
+router.delete("/", function(req, res, next){
+	User.remove({ }, function(err, users){
+		if(err){
+			return res.status(400).send("err in post /user");
+		}else{
+			console.log("删除成功");
+			return res.status(200).json("success");//res
+		}
+	})
 });
 
 /**
@@ -216,7 +209,7 @@ router.post("/delete", function(req, res, next){//req：用户ID
  *       200:
  *         description: success
  */
-//根据ID更新用户密码：管理员
+//根据ID更新用户密码：用户
 router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新密码
 	var user=req.body;
 	User.update({ userID: user.userID},{userPwd:user.userPwd}, function(err, users){
@@ -343,7 +336,7 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
  *   post:
  *     tags:
  *       - Task
- *     summary: 当前用户提交的任务情况
+ *     summary: 当前用户提交的任务情况【暂时废弃不用】
  *     description: 根据提交者ID查看任务
  *     produces:
  *       - application/json
@@ -371,13 +364,6 @@ router.post("/task/author", function(req, res, next){//req:userID
 			return res.status(200).json(tasks);//res
 		}
 	})
-});
-
-//用户查看自己待处理的任务：请假(taskID=1，自己是部长且task中authorDepart是自己部门的任务)
-//工作(taskID=2，自己是部员且有发布到自己部门的任务)
-router.post("/handle",function(req,res,next){
-	
-	
 });
 
 module.exports = router;

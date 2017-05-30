@@ -9,6 +9,8 @@ var Depart = require('../models/depart');
  * definition:
  *   Bulletin:
  *     properties:
+ *       departID:
+ *         type: number
  *       departName:
  *         type: string
  *       name:

@@ -7,7 +7,8 @@ var DepartSchema = new mongoose.Schema({
   	unique: true
   },
   departName: String,
-  parent: Number,//引用部门ID
+  parentID: Number,//引用部门ID
+  parentName: String,
   create_at: {
     type: Date,
     default: Date.now
