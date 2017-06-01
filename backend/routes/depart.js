@@ -17,6 +17,10 @@ var Count = require('../models/count');
  *         type: number
  *       parentName:
  *         type: string
+ *       leaderID:
+ *         type: number
+ *       leaderName:
+ *         type: string
  */
 
  /**
@@ -104,7 +108,34 @@ router.get("/", function(req, res, next){//无参数
 			return res.status(400).send("err in get /depart");
 		}else{
 			console.log(departs);
-			return res.status(200).json(departs);//res:部门ID、名字、父部门ID
+			return res.status(200).json(departs);//res
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /depart/search:
+ *   post:
+ *     tags:
+ *       - Depart
+ *     summary: 根据部门ID返回部门所有信息
+ *     description: 查找具体部门信息
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 部门对象信息
+ */
+//根据部门ID返回该部门所有信息
+router.post("/search", function(req, res, next){//req:departID
+	var depart=req.body;
+	Depart.find({ departID:depart.departID }, function(err, departs){
+		if(err){
+			return res.status(400).send("err in post /depart/search");
+		}else{
+			console.log(departs);
+			return res.status(200).json(departs);//res：部门信息
 		}
 	})
 });
@@ -147,7 +178,7 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
 						if(users==null){
 		 					Depart.remove({ departID: depart.departID}, function(err, departs){
 								if(err){
-									return res.status(400).send("err in post /depart");
+									return res.status(400).send("err in post /depart/delete");
 								}else{
 									console.log("删除成功");
 									return res.status(200).json("success");//res
@@ -184,7 +215,7 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
 router.get("/search/first", function(req, res, next){
 	Depart.find({ parentID: 0 }, function(err, departs){
 		if(err){
-			return res.status(400).send("err in post /depart");
+			return res.status(400).send("err in post /depart/search/first");
 		}else{
 			console.log(departs);
 			return res.status(200).json(departs);//res:所有一级部门
@@ -218,7 +249,7 @@ router.post("/search/children", function(req, res, next){//req:部门名(作为�
 	var depart=req.body;
 	Depart.findOne({ parentName:depart.departName }, function(err, departs){
 		if(err){
-			return res.status(400).send("err in post /depart");
+			return res.status(400).send("err in post /depart/search/children");
 		}else{
 			if(departs==null){
 				console.log("空");

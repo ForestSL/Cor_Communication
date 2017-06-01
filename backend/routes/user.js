@@ -50,8 +50,9 @@ var Count = require('../models/count');
  *         description: exist/no depart/success
  */
 //新建用户：管理员
-router.post("/", function(req, res, next){//req:姓名、电话、密码、头像
+router.post("/", function(req, res, next){//req:姓名、电话
 	var user = req.body;
+	user.userPwd=user.userPhone;//初始密码默认为手机号
     User.findOne({ userPhone: user.userPhone}, function(err, users){//根据帐号（电话）先看是否已经存在该用户
 		if(users==null){
 			//查找部门ID当前数量
@@ -62,15 +63,15 @@ router.post("/", function(req, res, next){//req:姓名、电话、密码、头�
 				Count.update({},{userNum:counts.userNum+1}, function(err, result){
 					console.log("用户ID加一");
 				})
-			})
 
-			User.create(user, function(err, user){
-			    if (err) {
-					return res.status(400).send("err in post /user");
-				} else {
-					//console.log(78);
-					return res.status(200).json("success");//res
-				}
+				User.create(user, function(err, user){
+			   		if (err) {
+						return res.status(400).send("err in post /user");
+					} else {
+						//console.log(78);
+						return res.status(200).json("success");//res
+					}
+				})
 			})
  		}else{
 			return res.status(200).json("exist");//res:已经存在该用户
@@ -78,11 +79,25 @@ router.post("/", function(req, res, next){//req:姓名、电话、密码、头�
 	})	
 });
 
+/**
+ * @swagger
+ * /user:
+ *   delete:
+ *     tags:
+ *       - User
+ *     summary: 开发人员进行数据测试删除所有数据
+ *     description: 删除信息
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //删除所有信息（测试用）
 router.delete("/", function(req, res, next){
 	User.remove({ }, function(err, users){
 		if(err){
-			return res.status(400).send("err in post /user");
+			return res.status(400).send("err in delete /user");
 		}else{
 			console.log("删除成功");
 			return res.status(200).json("success");//res
@@ -96,7 +111,7 @@ router.delete("/", function(req, res, next){
  *   get:
  *     tags:
  *       - User
- *     summary: 返回用户信息
+ *     summary: 返回所有用户信息
  *     description: 返回所有用户
  *     produces:
  *       - application/json
@@ -113,14 +128,14 @@ router.get("/", function(req, res, next){//无参数
 			return res.status(400).send("err in get /user");
 		}else{
 			console.log(users);
-			return res.status(200).json(users);//res:ID、姓名、电话、密码、部门、是否部长、聊天信息
+			return res.status(200).json(users);//res
 		}
 	})
 });
 
 /**
  * @swagger
- * /user/search:
+ * /user/search/departid:
  *   post:
  *     tags:
  *       - User
@@ -142,14 +157,50 @@ router.get("/", function(req, res, next){//无参数
  *           $ref: '#/definitions/User'
  */
 //根据部门ID返回用户信息：管理员、用户
-router.post("/search", function(req, res, next){//req:部门ID
+router.post("/search/departid", function(req, res, next){//req:部门ID
 	var user=req.body;
 	User.find({ userDepart: user.userDepart }, function(err, users){
 		if(err){
-			return res.status(400).send("err in get /user");
+			return res.status(400).send("err in get /user/search/departid");
 		}else{
 			console.log(users);
 			return res.status(200).json(users);//res:ID、姓名、电话、密码、部门、是否部长、聊天信息
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /user/search/userid:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: 根据用户ID返回用户所有信息
+ *     description: 用户ID查找用户信息
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user(userID)
+ *         description: User object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/User'
+ *     responses:
+ *       200:
+ *         description: 返回该用户信息
+ *         schema:
+ *           $ref: '#/definitions/User'
+ */
+//根据用户ID返回用户信息
+router.post("/search/userid", function(req, res, next){//req:用户ID
+	var user=req.body;
+	User.find({ userID: user.userID }, function(err, users){
+		if(err){
+			return res.status(400).send("err in get /user/search/userid");
+		}else{
+			console.log(users);
+			return res.status(200).json(users);//res:该用户信息
 		}
 	})
 });
@@ -175,12 +226,12 @@ router.post("/search", function(req, res, next){//req:部门ID
  *       200:
  *         description: success
  */
-//删除指定ID用户：管理员
+//删除指定ID用户(彻底删除)
 router.post("/delete", function(req, res, next){//req：用户ID
 	var user=req.body;
 	User.remove({ userID: user.userID}, function(err, users){
 		if(err){
-			return res.status(400).send("err in post /user");
+			return res.status(400).send("err in post /user/delete");
 		}else{
 			console.log("删除成功");
 			return res.status(200).json("success");//res
@@ -194,7 +245,7 @@ router.post("/delete", function(req, res, next){//req：用户ID
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID修改密码
+ *     summary: 根据用户ID以及新密码修改密码
  *     description: 根据ID修改密码
  *     produces:
  *       - application/json
@@ -214,7 +265,7 @@ router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新�
 	var user=req.body;
 	User.update({ userID: user.userID},{userPwd:user.userPwd}, function(err, users){
 		if(err){
-			return res.status(400).send("err in post /user");
+			return res.status(400).send("err in post /user/update/pwd");
 		}else{
 			console.log("更新成功");
 			return res.status(200).json("success");//res
@@ -228,7 +279,7 @@ router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新�
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID修改部门
+ *     summary: 根据用户ID修改部门【暂未使用】
  *     description: 根据ID修改部门
  *     produces:
  *       - application/json
@@ -258,16 +309,16 @@ router.post("/update/depart", function(req, res, next){//req:用户ID、用户�
 
 /**
  * @swagger
- * /user/update/isLeader:
+ * /user/update/leader:
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID修改职位
- *     description: 根据ID修改是否为部长
+ *     summary: 根据部门名称、用户ID确认部长
+ *     description: 修改部长
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: user(userID isLeader)
+ *       - name: user(departName、userID)
  *         description: User object
  *         in: body
  *         required: true
@@ -277,15 +328,45 @@ router.post("/update/depart", function(req, res, next){//req:用户ID、用户�
  *       200:
  *         description: success
  */
-//根据ID更新用户是否部长：管理员
-router.post("/update/isleader", function(req, res, next){//req:用户ID、用户新职位（部长就用部门ID）
+//根据部门名称、用户ID确认部长（先删除旧部长）
+router.post("/update/leader", function(req, res, next){//req:departName、userID
 	var user=req.body;
-	User.update({ userID: user.userID},{isLeader:user.isleader}, function(err, users){
-		if(err){
-			return res.status(400).send("err in post /user");
+	Depart.findOne({ departName: user.departName}, function(err, result1){//根据部门名找到部门ID：result1.departID
+		if(result1==null){
+			console.log("不存在该部门");
+			return res.status(200).json("no depart");
 		}else{
-			console.log("更新成功");
-			return res.status(200).json("success");//res
+			User.findOne({ userID: user.userID}, function(err, result2){//根据用户ID找到用户名result2.userName
+				User.update({ DepartName:user.departName },{isLeader: 0}, function(err, result3){//把该部门下所有员工设为普通员工
+					if(err){
+						return res.status(400).send("err in post /user/update/leader");
+					}else{
+						User.update({ userID:user.userID },{userDepart:result1.departID,DepartName:user.departName,isLeader: result1.departID}, 
+						function(err, result4){//把该用户设为部长
+							if(err){
+								return res.status(400).send("err in post /user/update/leader");
+							}else{
+								Depart.update({ leaderID:user.userID },{leaderID:0,leaderName:"null"}, 
+									function(err, result5){//修改该用户原来部门的部长信息
+									if(err){
+										return res.status(400).send("err in post /user/update/leader");
+									}else{
+										Depart.update({ departName:user.departName },{leaderID:user.userID,leaderName:result2.userName}, 
+										function(err, result6){//修改部门的部长信息
+											if(err){
+												return res.status(400).send("err in post /user/update/leader");
+											}else{
+												console.log("success");
+												return res.status(200).json("success");
+											}
+										})
+									}
+								})
+							}
+						})
+					}
+				})
+			})
 		}
 	})
 });
@@ -332,11 +413,86 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 
 /**
  * @swagger
+ * /user/add/staff:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: 管理员将员工添加到相应部门
+ *     description: 添加员工到部门
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user(departName、userID)
+ *         description: User object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/User'
+ *     responses:
+ *       400:
+ *         description: err in post /user/add/staff
+ */
+//管理员将员工添加到相应部门
+router.post("/add/staff", function(req, res, next){//req:departName、userID
+	var user=req.body;
+	Depart.findOne({ departName: user.departName}, function(err, result1){//根据部门名找到部门ID：result1.departID
+		if(err){
+			return res.status(400).send("err in post /user/add/staff");
+		}else{
+			User.update({ userID:user.userID },{userDepart:result1.departID,DepartName:user.departName}, 
+			function(err, result2){//修改用户的部门信息
+				if(err){
+					return res.status(400).send("err in post /user/add/staff");
+				}else{
+					console.log("添加成功");
+					return res.status(200).json("success");//res
+				}
+			})
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /user/remove/staff:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: 管理员将员工从相应部门删除
+ *     description: 删除员工
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user(userID)
+ *         description: User object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/User'
+ *     responses:
+ *       400:
+ *         description: err in post /user/add/staff
+ */
+//管理员将员工从相应部门删除（还保留在公司人才库）
+router.post("/remove/staff", function(req, res, next){//req:userID
+	var user=req.body;
+	User.update({ userID:user.userID },{userDepart:0,DepartName:"null"}, function(err, result2){//修改用户的部门信息
+		if(err){
+			return res.status(400).send("err in post /user/add/staff");
+		}else{
+			console.log("删除成功");
+			return res.status(200).json("success");//res
+		}
+	})
+});
+
+/**
+ * @swagger
  * /user/task/author:
  *   post:
  *     tags:
  *       - Task
- *     summary: 当前用户提交的任务情况【暂时废弃不用】
+ *     summary: 当前用户提交的任务情况【暂未使用】
  *     description: 根据提交者ID查看任务
  *     produces:
  *       - application/json

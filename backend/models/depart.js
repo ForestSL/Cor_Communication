@@ -9,6 +9,14 @@ var DepartSchema = new mongoose.Schema({
   departName: String,
   parentID: Number,//引用部门ID
   parentName: String,
+  leaderID: {//领导ID及名称初始值
+    type: Number,
+    default: 0
+  },
+  leaderName: {
+    type: String,
+    default: "null"
+  },
   create_at: {
     type: Date,
     default: Date.now

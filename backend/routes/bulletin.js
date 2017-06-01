@@ -27,7 +27,7 @@ var Depart = require('../models/depart');
  *   post:
  *     tags:
  *       - Bulletin
- *     summary: 新建公告
+ *     summary: web端新建公告
  *     description: 创建新的公告
  *     produces:
  *       - application/json
@@ -45,36 +45,25 @@ var Depart = require('../models/depart');
 //新建公告：管理员
 router.post("/", function(req, res, next){//req:部门名称、公告名称、公告内容、时间
 	var bulletin = req.body;
-
-	//Lib.create_ID(bulletin.departName,id);
-	//Lib.name_ID(bulletin.departName,bulletin.departID);
-
 	//var promise = new mongoose.Promise();
-	Depart.findOne({ departName: bulletin.departName},function(err, result){
-	
-		
-			//var promise = new mongoose.Promise();
-    		//promise.resolve(err, result);
-			console.log(result);
-			//var result=resultText.body;
-			//var tmp=result.detail.departID;
-			//result = result.toObject();
-			console.log(result.departID);
-			//n = n.toObject();
-			bulletin.departID = result.departID;
-			//console.log(id);
-
-			//bulletin.departID=id;
-
-			Bulletin.create(bulletin, function(err, bulletin){
-		    if (err) {
+	Depart.findOne({ departName: bulletin.departName},function(err, result){		
+		//var promise = new mongoose.Promise();
+    	//promise.resolve(err, result);
+		console.log(result);
+		//var tmp=result.detail.departID;
+		//result = result.toObject();
+		console.log(result.departID);
+		bulletin.departID = result.departID;
+		//console.log(id);
+		//bulletin.departID=id;
+		Bulletin.create(bulletin, function(err, bulletin){
+		   	if (err) {
 				return res.status(400).send("err in post /bulletin");
 			} else {
 				return res.status(200).json("success");//res
 			}
-	   		})
+	   	})
 	})
-
 });
 
 /**
@@ -175,6 +164,31 @@ router.post("/delete", function(req, res, next){//req:公告时间
 			//console.log(err);
 			//console.log(bulletins);
 			return res.status(200).json("success");//res
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /bulletin:
+ *   delete:
+ *     tags:
+ *       - Bulletin
+ *     summary: 开发人员进行数据测试删除所有数据
+ *     description: 删除信息
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: success
+ */
+//删除所有信息（开发者测试数据使用）
+router.delete("/", function(req, res, next){
+	Depart.remove({}, function(err, departs){
+		if(err){
+			return res.status(400).send("err in delete /bulletin");
+		}else{
+			return res.status(200).json("success");
 		}
 	})
 });

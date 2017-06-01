@@ -29,7 +29,7 @@ var Task = require('../models/task');
  *   post:
  *     tags:
  *       - Task
- *     summary: 记录新的任务
+ *     summary: 记录新的任务【暂未使用】
  *     description: 任务记录
  *     produces:
  *       - application/json
@@ -64,7 +64,7 @@ router.post("/", function(req, res, next){//req
  *   get:
  *     tags:
  *       - Task
- *     summary: 返回所有任务信息
+ *     summary: 返回所有任务信息【暂未使用】
  *     description: 返回所有任务
  *     produces:
  *       - application/json

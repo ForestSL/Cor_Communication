@@ -24,7 +24,7 @@ var Admin = require('../models/admin');//定义User获取之前建立的User数�
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: admin
+ *       - name: admin(adminPhone、adminPwd)
  *         description: Admin object
  *         in: body
  *         required: true
@@ -94,7 +94,7 @@ router.get("/", function(req, res, next){//无参数
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: admin
+ *       - name: admin(adminPhone、adminPwd)
  *         description: Admin object
  *         in: body
  *         required: true
@@ -146,7 +146,7 @@ router.post("/login", function(req, res, next){//req:帐号、密码
  *       400:
  *         description: err in post /admin/delete
  */
-router.post("/delete", function(req, res, next){//req:公告时间
+router.post("/delete", function(req, res, next){//req:adminPhone
 	var admin=req.body;
 	Admin.remove({ adminPhone: admin.adminPhone }, function(err, admins){
 		if(err){
@@ -154,6 +154,31 @@ router.post("/delete", function(req, res, next){//req:公告时间
 		}else{
 			console.log("删除成功");
 			return res.status(200).json("success");//res
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /admin:
+ *   delete:
+ *     tags:
+ *       - Admin
+ *     summary: 开发人员进行数据测试删除所有数据
+ *     description: 删除信息
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: success
+ */
+//删除所有信息（开发者测试数据使用）
+router.delete("/", function(req, res, next){
+	Depart.remove({}, function(err, departs){
+		if(err){
+			return res.status(400).send("err in delete /admin");
+		}else{
+			return res.status(200).json("success");
 		}
 	})
 });

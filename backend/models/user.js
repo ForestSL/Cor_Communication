@@ -9,7 +9,10 @@ var UserSchema = new mongoose.Schema({
     unique: true
   },
   userName: String,
-  userPicture:String,
+  userPicture: {
+    type: String,
+    default: "null"
+  },
   userPhone: String,
   userPwd: String,
   userDepart: {
