@@ -1,91 +1,77 @@
 var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
+var request = require('request');
 var Task = require('../models/task');
 
-/**
- * @swagger
- * definition:
- *   Task:
- *     properties:
- *       taskID:
- *         type: number
- *       authorID:
- *         type: number
- *       authorDepart:
- *         type: number
- *       taskBegin:
- *         type: string
- *       taskEnd:
- *         type: string
- *       content:
- *         type: string
- *       taskState:
- *         type: number
- */
+var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
-/**
- * @swagger
- * /task:
- *   post:
- *     tags:
- *       - Task
- *     summary: 记录新的任务【暂未使用】
- *     description: 任务记录
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: task
- *         description: Task object
- *         in: body
- *         required: true
- *         schema:
- *           $ref: '#/definitions/Task'
- *     responses:
- *       200:
- *         description: success
- *       400:
- *         description: err in post /task
- */
-router.post("/", function(req, res, next){//req
-	var task = req.body;
+//不带参数
+router.all('/1', function(req, res){
+	var method = req.method.toUpperCase();
+  	var proxy_url = baseUrl+"repository/deployments";
 
-			Task.create(task, function(err, task){
-				if (err) {
-					return res.status(400).send("err in post /task");
-				} else {
-					return res.status(200).json("success");//res
-				}
-			})
-});
+  	var options = {
+  		headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: req.body
+  	};
 
-/**
- * @swagger
- * /task:
- *   get:
- *     tags:
- *       - Task
- *     summary: 返回所有任务信息【暂未使用】
- *     description: 返回所有任务
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: 所有任务
- *         schema:
- *           $ref: '#/definitions/Task'
- *       400:
- *         description: err in get /task
- */
-//管理员后台查看所有任务记录
-router.get("/", function(req, res, next){//无参数
-	Task.find({}, function(err, tasks){
-		if(err){
-			return res.status(400).send("err in get /task");
-		}else{
-			console.log(tasks);
-			return res.status(200).json(tasks);//res:返回所有公告
-		}
-	})
-});
+  	function callback(error, response, data) {
+      	if (!error && response.statusCode == 200) {
+        	console.log('------接口数据------',data);
+          	res.json(data);
+      	}
+  	}
+  	request(options, callback);
+})
+
+//待参数做URL
+router.post('/2', function(req, res){
+	var task=req.body;
+	var method = "GET";
+  	var proxy_url = baseUrl+"repository/deployments/"+task.id;
+
+  	var options = {
+  		headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: req.body
+  	};
+
+  	function callback(error, response, data) {
+      	if (!error && response.statusCode == 200) {
+        	console.log('------接口数据------',data);
+          	res.json(data);
+      	}
+  	}
+  	request(options, callback);
+})
+
+//待参数做URL和activiti参数
+router.post('/3', function(req, res){
+	var task=req.body;
+	var method = "POST";
+  	var proxy_url = baseUrl+"repository/process-definitions/"+task.id+"/identitylinks";
+
+  	var options = {
+  		headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: {"user" : "kermit"}//无法传参
+  	};
+
+  	function callback(error, response, data) {
+      	if (!error && response.statusCode == 200) {
+        	console.log('------接口数据------',data);
+          	res.json(data);
+      	}
+  	}
+  	request(options, callback);
+
+})
 
 module.exports = router;

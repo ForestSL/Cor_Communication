@@ -184,7 +184,7 @@ router.post("/delete", function(req, res, next){//req:公告时间
  */
 //删除所有信息（开发者测试数据使用）
 router.delete("/", function(req, res, next){
-	Depart.remove({}, function(err, departs){
+	Bulletin.remove({}, function(err, departs){
 		if(err){
 			return res.status(400).send("err in delete /bulletin");
 		}else{

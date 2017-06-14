@@ -123,6 +123,13 @@ router.get("/", function(req, res, next){//无参数
  *     description: 查找具体部门信息
  *     produces:
  *       - application/json
+ *     parameters:
+ *       - name: depart(departID)
+ *         description: Depart object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Depart'
  *     responses:
  *       200:
  *         description: 部门对象信息
