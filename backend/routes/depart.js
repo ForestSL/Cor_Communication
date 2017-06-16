@@ -95,7 +95,7 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
  *   get:
  *     tags:
  *       - Depart
- *     summary: 返回所有部门对象信息(登录权限验证)
+ *     summary: 返回所有部门对象信息
  *     description: 返回所有部门
  *     produces:
  *       - application/json
@@ -107,7 +107,6 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
  */
 //返回所有部门信息：用户
 router.get("/", function(req, res, next){//无参数
-	if(req.session.user) {
 		Depart.find({}, function (err, departs) {
 			if (err) {
 				return res.status(400).send("err in get /depart");
@@ -116,9 +115,6 @@ router.get("/", function(req, res, next){//无参数
 				return res.status(200).json(departs);//res
 			}
 		})
-	}else{
-		return res.status(200).json("user login first");
-	}
 });
 
 /**
@@ -226,7 +222,7 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
  *   get:
  *     tags:
  *       - Depart
- *     summary: 返回给web端一级部门(登录权限验证)
+ *     summary: 返回给web端一级部门
  *     description: 查找一级部门
  *     produces:
  *       - application/json
@@ -236,7 +232,6 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
  */
 //组织树信息返回，根据部门名称返回该部门子部门
 router.get("/search/first", function(req, res, next){
-	if(req.session.admin) {
 	Depart.find({ parentID: 0 }, function(err, departs){
 		if(err){
 			return res.status(400).send("err in post /depart/search/first");
@@ -245,9 +240,6 @@ router.get("/search/first", function(req, res, next){
 			return res.status(200).json(departs);//res:所有一级部门
 		}
 	})
-	}else{
-		return res.status(200).json("admin login first");
-	}
 });
 
 /**
@@ -256,7 +248,7 @@ router.get("/search/first", function(req, res, next){
  *   post:
  *     tags:
  *       - Depart
- *     summary: 管理员在后台根据部门名称返回该部门子部门(登录权限验证)
+ *     summary: 管理员在后台根据部门名称返回该部门子部门
  *     description: 查找子部门
  *     produces:
  *       - application/json
@@ -273,7 +265,6 @@ router.get("/search/first", function(req, res, next){
  */
 //组织树信息返回，根据部门名称返回该部门子部门
 router.post("/search/children", function(req, res, next){//req:部门名(作为父部门)
-	if(req.session.admin) {
 		var depart = req.body;
 		Depart.findOne({parentName: depart.departName}, function (err, departs) {
 			if (err) {
@@ -290,9 +281,6 @@ router.post("/search/children", function(req, res, next){//req:部门名(作为�
 				}
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
 });
 
 /**

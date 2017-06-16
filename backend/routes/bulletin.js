@@ -76,7 +76,7 @@ router.post("/", function(req, res, next){//req:部门名称、公告名称、�
  *   get:
  *     tags:
  *       - Bulletin
- *     summary: 返回公告(登录权限验证)
+ *     summary: 返回公告
  *     description: 返回所有公告
  *     produces:
  *       - application/json
@@ -88,7 +88,6 @@ router.post("/", function(req, res, next){//req:部门名称、公告名称、�
  */
 //返回所有公告：管理员
 router.get("/", function(req, res, next){//无参数
-	if(req.session.admin) {
 	Bulletin.find({}, function(err, bulletins){
 		if(err){
 			return res.status(400).send("err in get /bulletin");
@@ -97,9 +96,6 @@ router.get("/", function(req, res, next){//无参数
 			return res.status(200).json(bulletins);//res:返回所有公告
 		}
 	})
-	}else{
-		return res.status(200).json("admin login first");
-	}
 });
 
 /**
@@ -108,7 +104,7 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - Bulletin
- *     summary: 根据部门查找公告(登录权限验证)
+ *     summary: 根据部门查找公告
  *     description: 根据公告发布部门名查找公告
  *     produces:
  *       - application/json
@@ -127,7 +123,6 @@ router.get("/", function(req, res, next){//无参数
  */
 //查找公告：用户
 router.post("/search", function(req, res, next){//req:部门名称
-	if(req.session.user) {
 	var user = req.body;
 	Bulletin.find({ departName: user.DepartName}, function(err, bulletins){
 		if(err){
@@ -137,9 +132,6 @@ router.post("/search", function(req, res, next){//req:部门名称
 			return res.status(200).json(bulletins);//res:返回该部门现有公告
 		}
 	})
-	}else{
-		return res.status(200).json("user login first");
-	}
 });
 
 /**
