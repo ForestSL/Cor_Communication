@@ -27,7 +27,7 @@ var Depart = require('../models/depart');
  *   post:
  *     tags:
  *       - Bulletin
- *     summary: web端新建公告
+ *     summary: web端新建公告(登录权限验证)
  *     description: 创建新的公告
  *     produces:
  *       - application/json
@@ -44,26 +44,30 @@ var Depart = require('../models/depart');
  */
 //新建公告：管理员
 router.post("/", function(req, res, next){//req:部门名称、公告名称、公告内容、时间
-	var bulletin = req.body;
-	//var promise = new mongoose.Promise();
-	Depart.findOne({ departName: bulletin.departName},function(err, result){		
+	if(req.session.admin) {
+		var bulletin = req.body;
 		//var promise = new mongoose.Promise();
-    	//promise.resolve(err, result);
-		console.log(result);
-		//var tmp=result.detail.departID;
-		//result = result.toObject();
-		console.log(result.departID);
-		bulletin.departID = result.departID;
-		//console.log(id);
-		//bulletin.departID=id;
-		Bulletin.create(bulletin, function(err, bulletin){
-		   	if (err) {
-				return res.status(400).send("err in post /bulletin");
-			} else {
-				return res.status(200).json("success");//res
-			}
-	   	})
-	})
+		Depart.findOne({departName: bulletin.departName}, function (err, result) {
+			//var promise = new mongoose.Promise();
+			//promise.resolve(err, result);
+			console.log(result);
+			//var tmp=result.detail.departID;
+			//result = result.toObject();
+			console.log(result.departID);
+			bulletin.departID = result.departID;
+			//console.log(id);
+			//bulletin.departID=id;
+			Bulletin.create(bulletin, function (err, bulletin) {
+				if (err) {
+					return res.status(400).send("err in post /bulletin");
+				} else {
+					return res.status(200).json("success");//res
+				}
+			})
+		})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -72,7 +76,7 @@ router.post("/", function(req, res, next){//req:部门名称、公告名称、�
  *   get:
  *     tags:
  *       - Bulletin
- *     summary: 返回公告
+ *     summary: 返回公告(登录权限验证)
  *     description: 返回所有公告
  *     produces:
  *       - application/json
@@ -84,6 +88,7 @@ router.post("/", function(req, res, next){//req:部门名称、公告名称、�
  */
 //返回所有公告：管理员
 router.get("/", function(req, res, next){//无参数
+	if(req.session.admin) {
 	Bulletin.find({}, function(err, bulletins){
 		if(err){
 			return res.status(400).send("err in get /bulletin");
@@ -92,6 +97,9 @@ router.get("/", function(req, res, next){//无参数
 			return res.status(200).json(bulletins);//res:返回所有公告
 		}
 	})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -100,7 +108,7 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - Bulletin
- *     summary: 根据部门查找公告
+ *     summary: 根据部门查找公告(登录权限验证)
  *     description: 根据公告发布部门名查找公告
  *     produces:
  *       - application/json
@@ -119,6 +127,7 @@ router.get("/", function(req, res, next){//无参数
  */
 //查找公告：用户
 router.post("/search", function(req, res, next){//req:部门名称
+	if(req.session.user) {
 	var user = req.body;
 	Bulletin.find({ departName: user.DepartName}, function(err, bulletins){
 		if(err){
@@ -128,6 +137,9 @@ router.post("/search", function(req, res, next){//req:部门名称
 			return res.status(200).json(bulletins);//res:返回该部门现有公告
 		}
 	})
+	}else{
+		return res.status(200).json("user login first");
+	}
 });
 
 /**
@@ -136,7 +148,7 @@ router.post("/search", function(req, res, next){//req:部门名称
  *   post:
  *     tags:
  *       - Bulletin
- *     summary: 根据公告时间删除公告
+ *     summary: 根据公告时间删除公告(登录权限验证)
  *     description: 根据时间删除公告
  *     produces:
  *       - application/json
@@ -153,6 +165,7 @@ router.post("/search", function(req, res, next){//req:部门名称
  */
 //删除公告：管理员
 router.post("/delete", function(req, res, next){//req:公告时间
+	if(req.session.admin) {
 	var bulletin = req.body;
 	console.log(bulletin.time);
 	Bulletin.remove({ time: bulletin.time }, function(err, bulletins){
@@ -166,6 +179,9 @@ router.post("/delete", function(req, res, next){//req:公告时间
 			return res.status(200).json("success");//res
 		}
 	})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**

@@ -29,6 +29,7 @@ var Count = require('../models/count');
  *       400:
  *         description: err in post /count
  */
+//必须先新建一组数据
 router.post("/", function(req, res, next){//req
 	var count = req.body;	
 	Count.create(count, function(err, count){

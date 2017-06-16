@@ -117,10 +117,33 @@ router.post("/login", function(req, res, next){//req:帐号、密码
 			}
 			else{
 				console.log("登录成功");
+				req.session.admin=admin;
 				return res.status(200).json("success");//res
 			}
 		}
 	})
+});
+
+/**
+ * @swagger
+ * /admin:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: 管理员退出登录
+ *     description: 管理员退出登录
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: logout
+ *         schema:
+ *           $ref: '#/definitions/Admin'
+ */
+//退出登录
+router.get("/logout", function(req, res, next) {
+	req.session.admin=null;
+	return res.status(200).json("admin logout");
 });
 
 /**

@@ -29,7 +29,7 @@ var Count = require('../models/count');
  *   post:
  *     tags:
  *       - Depart
- *     summary: 管理员在后台增加部门
+ *     summary: 管理员在后台增加部门(登录权限验证)
  *     description: 创建新的部门
  *     produces:
  *       - application/json
@@ -46,43 +46,47 @@ var Count = require('../models/count');
  */
 //新建部门：管理员
 router.post("/", function(req, res, next){//req:部门名字(后台自动生成ID)、父部门名字(后台判断ID)
-	var depart = req.body;
-	Depart.findOne({ departName: depart.departName}, function(err, departs){//先看是否已经存在该部门
-		if(departs==null){
-			//查找部门ID当前数量
-			Count.findOne({}, function(err, counts){
-				//Count.departNum = Count.departNum+1;//部门数加一
-				depart.departID = counts.departNum+1;//获得部门ID
-				//console.log(Count.departNum);
+	if(req.session.admin) {
+		var depart = req.body;
+		Depart.findOne({departName: depart.departName}, function (err, departs) {//先看是否已经存在该部门
+			if (departs == null) {
+				//查找部门ID当前数量
+				Count.findOne({}, function (err, counts) {
+					//Count.departNum = Count.departNum+1;//部门数加一
+					depart.departID = counts.departNum + 1;//获得部门ID
+					//console.log(Count.departNum);
 
-				//更新部门Num
-				Count.update({},{departNum:counts.departNum+1}, function(err, result){
-					console.log("部门ID加一");
+					//更新部门Num
+					Count.update({}, {departNum: counts.departNum + 1}, function (err, result) {
+						console.log("部门ID加一");
+					})
 				})
-			})
 
-			//根据父部门名字查找父部门ID
-			Depart.findOne({ departName: depart.parentName},function(err, result){
-				if(result==null){
-					depart.parentID=0;
-				}else{
-				depart.parentID=result.departID;//获得父部门ID
-				}
-				console.log(depart);
-
-				Depart.create(depart, function(err, depart){
-					if (err) {
-						return res.status(400).send("err in post /depart");
+				//根据父部门名字查找父部门ID
+				Depart.findOne({departName: depart.parentName}, function (err, result) {
+					if (result == null) {
+						depart.parentID = 0;
 					} else {
-						return res.status(200).json("success");//res
+						depart.parentID = result.departID;//获得父部门ID
 					}
+					console.log(depart);
+
+					Depart.create(depart, function (err, depart) {
+						if (err) {
+							return res.status(400).send("err in post /depart");
+						} else {
+							return res.status(200).json("success");//res
+						}
+					})
 				})
-			})
- 		}
-		else{
-			return res.status(200).json("exist");//res:已经存在该部门
-		}		
- 	})
+			}
+			else {
+				return res.status(200).json("exist");//res:已经存在该部门
+			}
+		})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -91,7 +95,7 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
  *   get:
  *     tags:
  *       - Depart
- *     summary: 返回所有部门对象信息
+ *     summary: 返回所有部门对象信息(登录权限验证)
  *     description: 返回所有部门
  *     produces:
  *       - application/json
@@ -101,16 +105,20 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
  *         schema:
  *           $ref: '#/definitions/Depart'
  */
-//返回所有部门信息：管理员、用户
+//返回所有部门信息：用户
 router.get("/", function(req, res, next){//无参数
-	Depart.find({}, function(err, departs){
-		if(err){
-			return res.status(400).send("err in get /depart");
-		}else{
-			console.log(departs);
-			return res.status(200).json(departs);//res
-		}
-	})
+	if(req.session.user) {
+		Depart.find({}, function (err, departs) {
+			if (err) {
+				return res.status(400).send("err in get /depart");
+			} else {
+				console.log(departs);
+				return res.status(200).json(departs);//res
+			}
+		})
+	}else{
+		return res.status(200).json("user login first");
+	}
 });
 
 /**
@@ -119,7 +127,7 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - Depart
- *     summary: 根据部门ID返回部门所有信息
+ *     summary: 管理员根据部门ID返回部门所有信息(登录权限验证)
  *     description: 查找具体部门信息
  *     produces:
  *       - application/json
@@ -134,8 +142,9 @@ router.get("/", function(req, res, next){//无参数
  *       200:
  *         description: 部门对象信息
  */
-//根据部门ID返回该部门所有信息
+//根据部门ID返回该部门所有信息：管理员用
 router.post("/search", function(req, res, next){//req:departID
+	if(req.session.admin) {
 	var depart=req.body;
 	Depart.find({ departID:depart.departID }, function(err, departs){
 		if(err){
@@ -145,6 +154,9 @@ router.post("/search", function(req, res, next){//req:departID
 			return res.status(200).json(departs);//res：部门信息
 		}
 	})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -153,7 +165,7 @@ router.post("/search", function(req, res, next){//req:departID
  *   post:
  *     tags:
  *       - Depart
- *     summary: 管理员在后台根据部门名称删除部门
+ *     summary: 管理员在后台根据部门名称删除部门(登录权限验证)
  *     description: 删除部门
  *     produces:
  *       - application/json
@@ -171,6 +183,7 @@ router.post("/search", function(req, res, next){//req:departID
 //删除部门：管理员
 //删除部门的子部门以及部门内员工的处理
 router.post("/delete", function(req, res, next){//req:待删除部门名称
+	if(req.session.admin) {
 	var depart=req.body;
 	Depart.findOne({ departName: depart.departName},function(err, result){	
 		if(result==null){
@@ -202,6 +215,9 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
 			})
 		}
 	})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -210,7 +226,7 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
  *   get:
  *     tags:
  *       - Depart
- *     summary: 返回给web端一级部门
+ *     summary: 返回给web端一级部门(登录权限验证)
  *     description: 查找一级部门
  *     produces:
  *       - application/json
@@ -220,6 +236,7 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
  */
 //组织树信息返回，根据部门名称返回该部门子部门
 router.get("/search/first", function(req, res, next){
+	if(req.session.admin) {
 	Depart.find({ parentID: 0 }, function(err, departs){
 		if(err){
 			return res.status(400).send("err in post /depart/search/first");
@@ -228,6 +245,9 @@ router.get("/search/first", function(req, res, next){
 			return res.status(200).json(departs);//res:所有一级部门
 		}
 	})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**
@@ -236,7 +256,7 @@ router.get("/search/first", function(req, res, next){
  *   post:
  *     tags:
  *       - Depart
- *     summary: 管理员在后台根据部门名称返回该部门子部门
+ *     summary: 管理员在后台根据部门名称返回该部门子部门(登录权限验证)
  *     description: 查找子部门
  *     produces:
  *       - application/json
@@ -253,22 +273,26 @@ router.get("/search/first", function(req, res, next){
  */
 //组织树信息返回，根据部门名称返回该部门子部门
 router.post("/search/children", function(req, res, next){//req:部门名(作为父部门)
-	var depart=req.body;
-	Depart.findOne({ parentName:depart.departName }, function(err, departs){
-		if(err){
-			return res.status(400).send("err in post /depart/search/children");
-		}else{
-			if(departs==null){
-				console.log("空");
-				return res.status(200).json("null");
-			}else{
-				Depart.find({ parentName:depart.departName }, function(err, results){
-					console.log(results);
-					return res.status(200).json(results);//res:该父部门下所有子部门
-				})
+	if(req.session.admin) {
+		var depart = req.body;
+		Depart.findOne({parentName: depart.departName}, function (err, departs) {
+			if (err) {
+				return res.status(400).send("err in post /depart/search/children");
+			} else {
+				if (departs == null) {
+					console.log("空");
+					return res.status(200).json("null");
+				} else {
+					Depart.find({parentName: depart.departName}, function (err, results) {
+						console.log(results);
+						return res.status(200).json(results);//res:该父部门下所有子部门
+					})
+				}
 			}
-		}
-	})
+		})
+	}else{
+		return res.status(200).json("admin login first");
+	}
 });
 
 /**

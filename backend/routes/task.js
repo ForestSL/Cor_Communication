@@ -6,7 +6,7 @@ var Task = require('../models/task');
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
 //不带参数
-router.all('/1', function(req, res){
+router.all('/1212', function(req, res){
 	var method = req.method.toUpperCase();
   	var proxy_url = baseUrl+"repository/deployments";
 

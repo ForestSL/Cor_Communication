@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var swaggerJSDoc = require('swagger-jsdoc');//swagger ui
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -49,8 +51,8 @@ var swaggerDefinition = {
   },
   host: '115.159.38.100:3000',
   //host: 'localhost:3000',
-  //basePath: 'http://115.159.38.100:3000',
-  basePath: '/',
+  basePath: 'http://115.159.38.100:3000',
+  //basePath: '/',
 };
 
 // options for the swagger docs
@@ -75,6 +77,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(cookieParser('sessiontest'));
+app.use(session({
+  store: new MongoStore({
+    url: "mongodb://localhost/test_session"//新建数据库
+  }),
+  cookie: { maxAge: 1 * 60 * 60 * 1000 }, //默认1小时
+  secret: 'sessiontest',
+  resave: false,
+  saveUninitialized: true
+}));
 
 app.use('/', index);
 app.use('/users', users);
