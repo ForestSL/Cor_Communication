@@ -46,7 +46,7 @@ var Count = require('../models/count');
  */
 //新建部门：管理员
 router.post("/", function(req, res, next){//req:部门名字(后台自动生成ID)、父部门名字(后台判断ID)
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var depart = req.body;
 		Depart.findOne({departName: depart.departName}, function (err, departs) {//先看是否已经存在该部门
 			if (departs == null) {
@@ -84,9 +84,9 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
 				return res.status(200).json("exist");//res:已经存在该部门
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -140,7 +140,7 @@ router.get("/", function(req, res, next){//无参数
  */
 //根据部门ID返回该部门所有信息：管理员用
 router.post("/search", function(req, res, next){//req:departID
-	if(req.session.admin) {
+	//if(req.session.admin) {
 	var depart=req.body;
 	Depart.find({ departID:depart.departID }, function(err, departs){
 		if(err){
@@ -150,9 +150,9 @@ router.post("/search", function(req, res, next){//req:departID
 			return res.status(200).json(departs);//res：部门信息
 		}
 	})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -179,7 +179,7 @@ router.post("/search", function(req, res, next){//req:departID
 //删除部门：管理员
 //删除部门的子部门以及部门内员工的处理
 router.post("/delete", function(req, res, next){//req:待删除部门名称
-	if(req.session.admin) {
+	//if(req.session.admin) {
 	var depart=req.body;
 	Depart.findOne({ departName: depart.departName},function(err, result){	
 		if(result==null){
@@ -211,9 +211,9 @@ router.post("/delete", function(req, res, next){//req:待删除部门名称
 			})
 		}
 	})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**

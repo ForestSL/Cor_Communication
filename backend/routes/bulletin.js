@@ -44,7 +44,8 @@ var Depart = require('../models/depart');
  */
 //新建公告：管理员
 router.post("/", function(req, res, next){//req:部门名称、公告名称、公告内容、时间
-	if(req.session.admin) {
+	//console.log(req.session.admin);
+	//if(req.session.admin) {
 		var bulletin = req.body;
 		//var promise = new mongoose.Promise();
 		Depart.findOne({departName: bulletin.departName}, function (err, result) {
@@ -65,9 +66,9 @@ router.post("/", function(req, res, next){//req:部门名称、公告名称、�
 				}
 			})
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -157,7 +158,7 @@ router.post("/search", function(req, res, next){//req:部门名称
  */
 //删除公告：管理员
 router.post("/delete", function(req, res, next){//req:公告时间
-	if(req.session.admin) {
+	//if(req.session.admin) {
 	var bulletin = req.body;
 	console.log(bulletin.time);
 	Bulletin.remove({ time: bulletin.time }, function(err, bulletins){
@@ -171,9 +172,9 @@ router.post("/delete", function(req, res, next){//req:公告时间
 			return res.status(200).json("success");//res
 		}
 	})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**

@@ -118,6 +118,7 @@ router.post("/login", function(req, res, next){//req:帐号、密码
 			else{
 				console.log("登录成功");
 				req.session.admin=admin;
+				console.log(req.session.admin);
 				return res.status(200).json("success");//res
 			}
 		}

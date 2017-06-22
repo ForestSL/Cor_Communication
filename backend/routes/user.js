@@ -51,7 +51,7 @@ var Count = require('../models/count');
  */
 //新建用户：管理员
 router.post("/", function(req, res, next){//req:姓名、电话
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var user = req.body;
 		user.userPwd = user.userPhone;//初始密码默认为手机号
 		User.findOne({userPhone: user.userPhone}, function (err, users) {//根据帐号（电话）先看是否已经存在该用户
@@ -78,9 +78,9 @@ router.post("/", function(req, res, next){//req:姓名、电话
 				return res.status(200).json("exist");//res:已经存在该用户
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -127,7 +127,7 @@ router.delete("/", function(req, res, next){
  */
 //返回所有用户
 router.get("/", function(req, res, next){//无参数
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		User.find({}, function (err, users) {
 			if (err) {
 				return res.status(400).send("err in get /user");
@@ -136,9 +136,9 @@ router.get("/", function(req, res, next){//无参数
 				return res.status(200).json(users);//res
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -166,7 +166,7 @@ router.get("/", function(req, res, next){//无参数
  */
 //根据部门ID返回用户信息：管理员、用户
 router.post("/search/departid", function(req, res, next){//req:部门ID
-	if(req.session.user) {
+	//if(req.session.user) {
 	var user=req.body;
 	User.find({ userDepart: user.userDepart }, function(err, users){
 		if(err){
@@ -176,9 +176,9 @@ router.post("/search/departid", function(req, res, next){//req:部门ID
 			return res.status(200).json(users);//res:ID、姓名、电话、密码、部门、是否部长、聊天信息
 		}
 	})
-	}else{
-		return res.status(200).json("user login first");
-	}
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
 });
 
 /**
@@ -206,7 +206,7 @@ router.post("/search/departid", function(req, res, next){//req:部门ID
  */
 //根据用户ID返回用户信息
 router.post("/search/userid", function(req, res, next){//req:用户ID
-	if(req.session.user) {
+	//if(req.session.user) {
 		var user = req.body;
 		User.find({userID: user.userID}, function (err, users) {
 			if (err) {
@@ -216,9 +216,9 @@ router.post("/search/userid", function(req, res, next){//req:用户ID
 				return res.status(200).json(users);//res:该用户信息
 			}
 		})
-	}else{
-		return res.status(200).json("user login first");
-	}
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
 });
 
 /**
@@ -244,7 +244,7 @@ router.post("/search/userid", function(req, res, next){//req:用户ID
  */
 //删除指定ID用户(彻底删除)
 router.post("/delete", function(req, res, next){//req：用户ID
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var user = req.body;
 		User.remove({userID: user.userID}, function (err, users) {
 			if (err) {
@@ -254,9 +254,9 @@ router.post("/delete", function(req, res, next){//req：用户ID
 				return res.status(200).json("success");//res
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -282,7 +282,7 @@ router.post("/delete", function(req, res, next){//req：用户ID
  */
 //根据ID更新用户密码：用户
 router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新密码
-	if(req.session.user) {
+	//if(req.session.user) {
 		var user = req.body;
 		User.update({userID: user.userID}, {userPwd: user.userPwd}, function (err, users) {
 			if (err) {
@@ -292,9 +292,9 @@ router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新�
 				return res.status(200).json("success");//res
 			}
 		})
-	}else{
-		return res.status(200).json("user login first");
-	}
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
 });
 
 /**
@@ -354,7 +354,7 @@ router.post("/update/depart", function(req, res, next){//req:用户ID、用户�
  */
 //根据部门名称、用户ID确认部长（先删除旧部长）
 router.post("/update/leader", function(req, res, next){//req:departName、userID
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var user = req.body;
 		Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
 			if (result1 == null) {
@@ -401,9 +401,9 @@ router.post("/update/leader", function(req, res, next){//req:departName、userID
 				})
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -492,7 +492,7 @@ router.get("/logout", function(req, res, next) {
  */
 //管理员将员工添加到相应部门
 router.post("/add/staff", function(req, res, next){//req:departName、userID
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var user = req.body;
 		Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
 			if (err) {
@@ -509,9 +509,9 @@ router.post("/add/staff", function(req, res, next){//req:departName、userID
 					})
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**
@@ -537,7 +537,7 @@ router.post("/add/staff", function(req, res, next){//req:departName、userID
  */
 //管理员将员工从相应部门删除（还保留在公司人才库）
 router.post("/remove/staff", function(req, res, next){//req:userID
-	if(req.session.admin) {
+	//if(req.session.admin) {
 		var user = req.body;
 		User.update({userID: user.userID}, {userDepart: 0, DepartName: "null"}, function (err, result2) {//修改用户的部门信息
 			if (err) {
@@ -547,9 +547,9 @@ router.post("/remove/staff", function(req, res, next){//req:userID
 				return res.status(200).json("success");//res
 			}
 		})
-	}else{
-		return res.status(200).json("admin login first");
-	}
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
 });
 
 /**

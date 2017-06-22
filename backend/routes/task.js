@@ -5,73 +5,95 @@ var Task = require('../models/task');
 
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
-//不带参数
-router.all('/1212', function(req, res){
-	var method = req.method.toUpperCase();
-  	var proxy_url = baseUrl+"repository/deployments";
+//流程部署(参数：deployFile)
+router.post('/upload/deploy', function(req, res){
+    var deploy=req.body;
+    var method = "POST";
+    var proxy_url = baseUrl+"repository/deployments";
 
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: deploy.deployFile//流程文件
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('部署ID：',data.id);
+          console.log('部署详情：',data);
+          res.json(data);
+        }
+    }
+    request(options, callback);
+})
+
+//删除流程部署(参数：deploymentId)
+router.post('/delete/deploy', function(req, res){
+    var deploy=req.body;
+    var method = "DELETE";
+    var proxy_url = baseUrl+"repository/deployments/"+deploy.deploymentId;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('delete successfully!');
+            res.json('success');
+        }
+    }
+    request(options, callback);
+})
+
+//获取流程列表(无参数)
+router.get('/all', function(req, res){
+    var method = "GET";
+  	var proxy_url = baseUrl+"repository/process-definitions";
   	var options = {
   		headers: {"Connection": "close"},
         url: proxy_url,
         method: method,
-        json: true,
-        body: req.body
+        json: true
   	};
 
   	function callback(error, response, data) {
       	if (!error && response.statusCode == 200) {
-        	console.log('------接口数据------',data);
-          	res.json(data);
+        	console.log('流程总数：',data.total);
+          console.log('流程列表：',data.data);
+          res.json(data);
       	}
   	}
   	request(options, callback);
 })
 
-//待参数做URL
-router.post('/2', function(req, res){
-	var task=req.body;
-	var method = "GET";
-  	var proxy_url = baseUrl+"repository/deployments/"+task.id;
+//挂起流程(参数：processDefinitionId)
+router.post('/suspend/process', function(req, res){
+    var myprocess=req.body;
+    var method = "PUT";
+    var proxy_url = baseUrl+"repository/process-definitions/"+deploy.processDefinitionId;
 
-  	var options = {
-  		headers: {"Connection": "close"},
+    var options = {
+      headers: {"Connection": "close"},
         url: proxy_url,
         method: method,
-        json: true,
-        body: req.body
-  	};
+        json: true
+    };
 
-  	function callback(error, response, data) {
-      	if (!error && response.statusCode == 200) {
-        	console.log('------接口数据------',data);
-          	res.json(data);
-      	}
-  	}
-  	request(options, callback);
-})
-
-//待参数做URL和activiti参数
-router.post('/3', function(req, res){
-	var task=req.body;
-	var method = "POST";
-  	var proxy_url = baseUrl+"repository/process-definitions/"+task.id+"/identitylinks";
-
-  	var options = {
-  		headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true,
-        body: {"user" : "kermit"}//无法传参
-  	};
-
-  	function callback(error, response, data) {
-      	if (!error && response.statusCode == 200) {
-        	console.log('------接口数据------',data);
-          	res.json(data);
-      	}
-  	}
-  	request(options, callback);
-
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('suspend successfully!');
+          console.log('流程状态：',data.action);
+          console.log('流程下属实例：',data.includeProcessInstances);
+          res.json(data);
+        }
+    }
+    request(options, callback);
 })
 
 module.exports = router;
