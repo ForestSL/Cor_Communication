@@ -25,6 +25,7 @@ var task = require('./routes/task');
 var test = require('./routes/test');
 //var mylib = require('./routes/mylib');
 var count = require('./routes/count');
+//var activiti = require('./routes/activiti');
 
 //声明要用的融云模块
 var rongcloudSDK = require( 'rongcloud-sdk' );
@@ -104,6 +105,7 @@ app.use('/task', task);
 app.use('/test', test);
 //app.use('/mylib', mylib);
 app.use('/count', count);
+//app.use('/activiti',activiti);
 
 // serve swagger
 app.get('/swagger.json', function(req, res) {

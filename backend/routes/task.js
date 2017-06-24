@@ -96,9 +96,8 @@ router.post('/process/action', function(req, res){
 
     function callback(error, response, data) {
         if (!error && response.statusCode == 200) {
-          console.log('suspend successfully!');
+          console.log('successful');
           console.log('流程状态：',data.action);
-          console.log('是否包含流程实例：',data.includeProcessInstances);
           res.json(data);
         }
         if (!error && response.statusCode == 404) {
@@ -107,7 +106,7 @@ router.post('/process/action', function(req, res){
         }
         if (!error && response.statusCode == 409) {
           console.log('the requested process definition is already suspended!');
-          res.json('suspend');
+          res.json('exist');
         }
     }
     request(options, callback);
@@ -190,9 +189,46 @@ router.post('/processinstance/delete', function(req, res){
     request(options, callback);
 })
 
+//激活、挂起流程实例(参数：流程实例号processInstanceId、操作action:activate或suspend)
+router.post('/processinstance/action', function(req, res){
+    var myprocess=req.body;
+    var method = "PUT";
+    var proxy_url = baseUrl+"runtime/process-instances/"+myprocess.processInstanceId;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: {"action":myprocess.action}
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('successful');
+          console.log('流程实例状态：',data.action);
+          res.json(data);
+        }
+        if (!error && response.statusCode == 404) {
+          console.log('the requested process definition was not found!');
+          res.json('notfound');
+        }
+        if (!error && response.statusCode == 409) {
+          console.log('the requested process definition is already suspended!');
+          res.json('exist');
+        }
+    }
+    request(options, callback);
+})
+
 //启动一个流程实例(参数：流程号processDefinitionId)???
 router.post('/processinstance/start', function(req, res){
     var myprocess=req.body;
+    var params = {
+            "processDefinitionId": myprocess.processDefinitionId,
+            "businessKey": myprocess.businessKey,
+            "variables": myprocess.variables
+        };
     var method = "POST";
     var proxy_url = baseUrl+"runtime/process-instances";
 
@@ -201,7 +237,7 @@ router.post('/processinstance/start', function(req, res){
         url: proxy_url,
         method: method,
         json: true,
-        body: {"processDefinitionId":myprocess.processDefinitionId}
+        body: params
     };
 
     function callback(error, response, data) {
@@ -209,6 +245,7 @@ router.post('/processinstance/start', function(req, res){
           console.log('启动成功：',data);
           res.json(data);
         }
+        console.log(data);//???需要先部署？？？
     }
     request(options, callback);
 })
