@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var User = require('../models/user');//定义User获取之前建立的User数据模型
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
-var Task = require('../models/task');
 var Count = require('../models/count');
 
 /**
