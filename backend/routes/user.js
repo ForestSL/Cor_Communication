@@ -321,12 +321,18 @@ router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新�
 router.post("/update", function(req, res, next){//req:用户ID、用户新名字
 	//if(req.session.user) {
 		var user = req.body;
-		User.update({userID: user.userID}, {userName: user.userName,userPhone: user.userPhone, function (err, users) {
+		User.update({userID: user.userID}, {userName: user.userName, function (err, users) {
 			if (err) {
 				return res.status(400).send("err in post /user/update");
 			} else {
-				console.log("更新成功");
-				return res.status(200).json("success");//res
+				User.update({userID: user.userID}, {userPhone: user.userPhone, function (err, users) {
+					if (err) {
+						return res.status(400).send("err in post /user/update");
+					} else {
+						console.log("更新成功");
+						return res.status(200).json("success");//res
+					}
+				})
 			}
 		})
 	//}else{
