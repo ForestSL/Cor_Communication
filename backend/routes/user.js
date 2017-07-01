@@ -52,7 +52,7 @@ var Count = require('../models/count');
 router.post("/", function(req, res, next){//req:姓名、电话
 	//if(req.session.admin) {
 		var user = req.body;
-		user.userPwd = user.userPhone;//初始密码默认为手机号
+		user.userPwd = "000000";//初始密码默认为手机号
 		User.findOne({userPhone: user.userPhone}, function (err, users) {//根据帐号（电话）先看是否已经存在该用户
 			if (users == null) {
 				//查找部门ID当前数量
