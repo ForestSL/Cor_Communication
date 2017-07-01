@@ -298,6 +298,44 @@ router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新�
 
 /**
  * @swagger
+ * /user/update/name:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: 根据用户ID以及新名字修改信息(登录权限验证)
+ *     description: 根据ID修改名字
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user(userID userName)
+ *         description: User object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/User'
+ *     responses:
+ *       200:
+ *         description: success
+ */
+//修改员工名字
+router.post("/update/name", function(req, res, next){//req:用户ID、用户新名字
+	//if(req.session.user) {
+		var user = req.body;
+		User.update({userID: user.userID}, {userName: user.userName}, function (err, users) {
+			if (err) {
+				return res.status(400).send("err in post /user/update/name");
+			} else {
+				console.log("更新成功");
+				return res.status(200).json("success");//res
+			}
+		})
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
+});
+
+/**
+ * @swagger
  * /user/update/depart:
  *   post:
  *     tags:

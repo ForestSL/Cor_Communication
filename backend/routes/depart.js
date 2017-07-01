@@ -285,6 +285,44 @@ router.post("/search/children", function(req, res, next){//req:部门名(作为�
 
 /**
  * @swagger
+ * /depart/update/name:
+ *   post:
+ *     tags:
+ *       - Depart
+ *     summary: 根据ID以及新名字修改信息(登录权限验证)
+ *     description: 根据ID修改名字
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: depart(departID departName)
+ *         description: Depart object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Depart'
+ *     responses:
+ *       200:
+ *         description: success
+ */
+//修改部门名字
+router.post("/update/name", function(req, res, next){//req:部门ID、新名字
+	//if(req.session.user) {
+		var depart = req.body;
+		Depart.update({departID: depart.departID}, {departName: depart.departName}, function (err, users) {
+			if (err) {
+				return res.status(400).send("err in post /depart/update/name");
+			} else {
+				console.log("更新成功");
+				return res.status(200).json("success");//res
+			}
+		})
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
+});
+
+/**
+ * @swagger
  * /depart:
  *   delete:
  *     tags:

@@ -179,6 +179,64 @@ router.post("/delete", function(req, res, next){//req:公告时间
 
 /**
  * @swagger
+ * /bulletin/update:
+ *   post:
+ *     tags:
+ *       - Bulletin
+ *     summary: web端修改公告(登录权限验证)
+ *     description: 修改公告
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bulletin(lasttime departName name content time)
+ *         description: Bulletin object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ *     responses:
+ *       200:
+ *         description: 修改成功
+ */
+//修改公告
+router.post("/update", function(req, res, next){//req:上次的时间lasttime、新公告
+	//if(req.session.admin) {
+	var bulletin = req.body;
+		//删除旧公告
+	Bulletin.remove({ time: bulletin.lasttime }, function(err, bulletins){
+		if(err){
+			console.log(err);
+			return res.status(400).send("err in post /bulletin");
+		}else{
+			//var promise = new mongoose.Promise();
+			Depart.findOne({departName: bulletin.departName}, function (err, result) {
+			//var promise = new mongoose.Promise();
+			//promise.resolve(err, result);
+			console.log(result);
+			//var tmp=result.detail.departID;
+			//result = result.toObject();
+			console.log(result.departID);
+			bulletin.departID = result.departID;
+			//console.log(id);
+			//bulletin.departID=id;
+			Bulletin.create(bulletin, function (err, bulletin) {
+				if (err) {
+					return res.status(400).send("err in post /bulletin");
+				} else {
+					return res.status(200).json("success");//res
+				}
+			})
+			})
+		}
+	})
+		
+	//}else{
+		//return res.status(200).json("admin login first");
+	//}
+});
+
+/**
+ * @swagger
  * /bulletin:
  *   delete:
  *     tags:
