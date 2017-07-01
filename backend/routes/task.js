@@ -421,6 +421,58 @@ router.get('/tasks/all', function(req, res){
     request(options, callback);
 })
 
+//获取用户所有任务列表(参数：userName)：app端
+router.post('/tasks/owner', function(req, res){
+    var mytask = req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"runtime/tasks?owner="+mytask.userName;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('任务列表：',data);
+          res.json(data.data);
+        }
+        if (!error && response.statusCode == 400) {
+          console.log(data);
+          res.json('error');
+        }
+    }
+    request(options, callback);
+})
+
+//获取用户待处理任务列表(参数：userName)：app端
+router.post('/tasks/assignee', function(req, res){
+    var mytask = req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"runtime/tasks?assignee="+mytask.userName;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log('任务列表：',data);
+          res.json(data.data);
+        }
+        if (!error && response.statusCode == 400) {
+          console.log(data);
+          res.json('error');
+        }
+    }
+    request(options, callback);
+})
+
 //更新任务(参数：任务号taskId，其余参数参照params的数据类型)
 router.post('/tasks/update', function(req, res){
     var mytask = req.body;
@@ -429,8 +481,8 @@ router.post('/tasks/update', function(req, res){
         "assignee" : mytask.assignee,
         "description" : mytask.description,
         "dueDate" : mytask.dueDate,
-        "name" : mytask.name,
-        "owner" : mytask.owner
+        "name" : mytask.taskName,
+        "owner" : mytask.userName
     };
     var proxy_url = baseUrl+"runtime/tasks/"+mytask.taskId;
 
