@@ -411,7 +411,7 @@ router.get('/tasks/all', function(req, res){
     function callback(error, response, data) {
         if (!error && response.statusCode == 200) {
           console.log('任务列表：',data);
-          res.json(data);
+          res.json(data.data);
         }
         if (!error && response.statusCode == 400) {
           console.log(data);
@@ -427,7 +427,6 @@ router.post('/tasks/update', function(req, res){
     var method = "PUT";
     var params = {
         "assignee" : mytask.assignee,
-        "delegationState" : mytask.delegationState,
         "description" : mytask.description,
         "dueDate" : mytask.dueDate,
         "name" : mytask.name,
@@ -524,7 +523,7 @@ router.post('/tasks/delete', function(req, res){
     function callback(error, response, data) {
         if (!error && response.statusCode == 204) {
           console.log('删除成功：',data);
-          res.json(data);
+          res.json('success');
         }
         if (!error && response.statusCode == 403) {
           console.log(data);
@@ -554,7 +553,7 @@ router.get('/tasks/history/all', function(req, res){
       console.log(data);
         if (!error && response.statusCode == 200) {
           console.log('历史任务：',data);
-          res.json(data);
+          res.json(data.data);
         }
         if (!error && response.statusCode == 400) {
           console.log(data);

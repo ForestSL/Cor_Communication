@@ -308,12 +308,17 @@ router.post("/search/children", function(req, res, next){//req:部门名(作为�
 router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 	//if(req.session.user) {
 		var depart = req.body;
-		Depart.update({departID: depart.departID}, {departName: depart.departName}, function (err, users) {
+		Depart.update({departID: depart.departID}, {departName: depart.departName}, function (err, departs) {
 			if (err) {
 				return res.status(400).send("err in post /depart/update/name");
 			} else {
-				console.log("更新成功");
-				return res.status(200).json("success");//res
+				User.update({userDepart: depart.departID}, {DepartName: depart.departName}, function (err, users) {
+					if (err) {
+						return res.status(400).send("err in post /depart/update/name");
+					} else {
+						return res.status(400).send("success");
+					}
+				})
 			}
 		})
 	//}else{

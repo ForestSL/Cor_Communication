@@ -517,7 +517,7 @@ router.get("/logout", function(req, res, next) {
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: user(departName、userID)
+ *       - name: user(departName、userPhone)
  *         description: User object
  *         in: body
  *         required: true
@@ -528,14 +528,14 @@ router.get("/logout", function(req, res, next) {
  *         description: err in post /user/add/staff
  */
 //管理员将员工添加到相应部门
-router.post("/add/staff", function(req, res, next){//req:departName、userID
+router.post("/add/staff", function(req, res, next){//req:departName、userPhone
 	//if(req.session.admin) {
 		var user = req.body;
 		Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
 			if (err) {
 				return res.status(400).send("err in post /user/add/staff");
 			} else {
-				User.update({userID: user.userID}, {userDepart: result1.departID, DepartName: user.departName},
+				User.update({userPhone: user.userPhone}, {userDepart: result1.departID, DepartName: user.departName},
 					function (err, result2) {//修改用户的部门信息
 						if (err) {
 							return res.status(400).send("err in post /user/add/staff");
