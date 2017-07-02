@@ -398,13 +398,16 @@ router.post("/update/depart", function(req, res, next){//req:用户ID、用户�
 //根据部门名称、用户ID确认部长（先删除旧部长）
 router.post("/update/leader", function(req, res, next){//req:departName、userID
 	//if(req.session.admin) {
-		var user = req.body;
-		Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
-			if (result1 == null) {
-				console.log("不存在该部门");
-				return res.status(200).json("no depart");
-			} else {
-				User.findOne({userID: user.userID}, function (err, result2) {//根据用户ID找到用户名result2.userName
+	var user = req.body;
+	Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
+		if (result1 == null) {
+			console.log("不存在该部门");
+			return res.status(200).json("no depart");
+		} else {
+			User.findOne({userID: user.userID}, function (err, result2) {//根据用户ID找到用户名result2.userName
+				if (result2 == null){
+					return res.status(200).json("no user");
+				}else{
 					User.update({DepartName: user.departName}, {isLeader: 0}, function (err, result3) {//把该部门下所有员工设为普通员工
 						if (err) {
 							return res.status(400).send("err in post /user/update/leader");
@@ -441,9 +444,10 @@ router.post("/update/leader", function(req, res, next){//req:departName、userID
 								})
 						}
 					})
-				})
-			}
-		})
+				}
+			})
+		}
+	})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}

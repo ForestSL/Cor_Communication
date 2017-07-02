@@ -1,11 +1,251 @@
 var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var request = require('request');
-var Deploy = require('../models/deploy');
-var Process = require('../models/process');
-var Task = require('../models/task');
+var Vacation = require('../models/vacation');
+var User = require('../models/user');
+var Depart = require('../models/depart');
 
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
+
+//查看vacation数据
+router.get("/", function(req, res, next){//无参数
+  Vacation.find({}, function(err, tests){
+    if(err){
+      return res.status(400).send("err in get /task");
+    }else{
+      console.log(tests);
+      return res.status(200).json(tests);//res
+    }
+  })
+});
+
+//---------------------------------请假--------------------------------------
+
+//启动请假任务:启动请假流程实例、存储流程实例ID至数据库、设置任务的初始处理人（部长）
+router.post('/vacation/request', function(req, res){//参数：userID,userName,numOfDays,startTime,motivation
+    var vacation = req.body;
+    var processInstanceId;
+    var taskID;
+    var method = "POST";
+    var proxy_url = baseUrl+"runtime/process-instances";
+    var params = {
+            "processDefinitionId":"vacationRequest:1:31",//请假流程
+            "variables": [
+              {
+                "name":"employeeName",
+                "value":vacation.userID//便于处理assignee
+              },{
+                "name":"numberOfDays",
+                "value":vacation.numOfDays
+              },{
+                "name":"startDate",
+                "value":vacation.startTime
+              },{
+                "name":"vacationMotivation",
+                "value":vacation.motivation
+              }
+            ]
+        };
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: params
+    };
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 201) {
+          console.log('启动成功：',data);
+          processInstanceId = data.id;//获取流程实例ID
+
+                    //存储到数据库
+                      vacation.processID = processInstanceId;
+                      Vacation.create(vacation, function(err, vas){
+                      if (err) {
+                        console.log("err in post /task/vacation/request");
+                        //return res.status(400).send("err in post /task/vacation/request");
+                      } else {
+                        console.log("success");
+                        //return res.status(200).json("success");//返回值：success
+                      }
+                    })
+
+          //根据流程实例ID获取对应任务ID
+          var method2 = "GET";
+          var proxy_url2 = baseUrl+"runtime/tasks?processInstanceId="+processInstanceId;
+          var options2 = {
+            headers: {"Connection": "close"},
+            url: proxy_url2,
+            method: method2,
+            json: true
+          };
+          function callback2(error2, response2, data2) {
+            //console.log(data);
+            if (!error2 && response2.statusCode == 200) {
+              console.log(data2.data[0].id);
+              //res.json(data2.data[0].id);
+              taskID=data2.data[0].id;//获取任务ID
+
+          //设置该任务的处理人assignee为部长
+          var assignee;
+          User.findOne({userID: vacation.userID}, function (err, users) {
+            if (err) {
+              //console.log(data2);
+              return res.status(400).send("err in post /task/vacation/request");
+            } else {
+              //console.log(users.userDepart);
+              Depart.findOne({departID:users.userDepart},function(err2, departs){
+                if(err2){
+                  return res.status(400).send("error");
+                }else{
+                  assignee=departs.leaderID;//获取部长ID（处理人ID）
+                  console.log("assignee:");
+                  console.log(assignee);
+                  console.log(taskID);
+
+                  var method3 = "PUT";
+                  var proxy_url3 = baseUrl+"runtime/tasks/"+taskID;
+                  var params3 = {
+                   "assignee":assignee
+                  };
+
+                  var options3 = {
+                   headers: {"Connection": "close"},
+                   url: proxy_url3,
+                   method: method3,
+                   json: true,
+                   body: params3
+                  };
+
+                  function callback3(error3, response3, data3) {
+                    console.log(data3);
+                    if (!error3 && response3.statusCode == 200) {
+                      console.log("success"); 
+                      res.json("success");//返回值：success
+                  }
+                } 
+                request(options3, callback3);
+
+                }
+              })
+            }
+          })
+
+            }
+          }
+          request(options2, callback2); 
+
+        }
+        if (!error && response.statusCode == 400) {
+          console.log('启动失败：',data);
+          res.json("fail");//返回值：fail
+        }
+    }
+    request(options, callback);
+})
+
+//用户当前已有任务列表
+router.post('/vacation/list', function(req, res){//参数：userID
+  var user = req.body;
+  Vacation.find({userID:user.userID}, function(err, tests){
+    if(err){
+      return res.status(400).send("err in get /task");
+    }else{
+      console.log(tests);
+      return res.status(200).json(tests);//返回值：包含userID,userName,processID的对象数组
+    }
+  })
+})
+
+//点击列表查看任务详情
+router.post('/vacation/list/detail', function(req, res){//参数：processID
+    var pa = req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"runtime/tasks?processInstanceId="+pa.processID;
+
+    var options = {
+        headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+      //console.log(data);
+        if (!error && response.statusCode == 200) {
+          console.log(data.data[0]);
+          res.json(data.data[0]);//返回值：包含name(任务阶段),description(处理userID成userName???),createTime的对象
+        }
+        if (!error && response.statusCode == 400) {
+          console.log(data);
+          res.json("fail");//返回值：fail
+        }
+    }
+    request(options, callback);
+})
+
+//用户当前待处理任务列表
+router.post('/vacation/handle/list', function(req, res){//参数：userID
+          var user=req.body;
+          //根据assignee查找任务列表
+          var method = "GET";
+          var proxy_url = baseUrl+"runtime/tasks?assignee="+user.userID;
+
+          var options = {
+            headers: {"Connection": "close"},
+            url: proxy_url,
+            method: method,
+            json: true
+          };
+
+          function callback(error, response, data) {
+            //console.log(data);
+            if (!error && response.statusCode == 200) {
+              console.log(data.data);
+              res.json(data.data);//返回值：包含id,name的对象数组
+            }
+            if (!error && response.statusCode == 400) {
+              console.log(data);
+              res.json("fail");//返回值：fail
+            }
+          }
+          request(options, callback);
+})
+
+//点击列表查看待处理任务详情
+router.post('/vacation/handle/detail', function(req, res){//参数：id
+    var mytask = req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log(data);
+          res.json(data);//返回值：包含createTime,description,id,name的对象
+        }
+        if (!error && response.statusCode == 404) {
+          console.log(data);
+          res.json("notfound");//返回值：notfound
+        }
+    }
+    request(options, callback); 
+})
+
+//处理任务
+router.post('/vacation/handle', function(req, res){//参数：id,name(三种任务类型：Handle vacation request,Send confirmation e-mail,Adjust vacation request)
+  //根据name判断当前属于哪个分支，决定处理的variables参数
+})
+
+//流程完成后的处理
+
+//web端历史流程、历史任务、当前任务列表
 
 //---------------------------------部署--------------------------------------
 
