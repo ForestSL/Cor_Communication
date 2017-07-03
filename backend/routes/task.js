@@ -152,7 +152,7 @@ router.post('/vacation/list', function(req, res){//参数：userID
       return res.status(400).send("err in get /task");
     }else{
       console.log(tests);
-      return res.status(200).json(tests);//返回值：包含userID,userName,processID的对象数组
+      return res.status(200).json(tests);//返回值：包含userID,userName,processID,state,result的对象数组
     }
   })
 })
@@ -228,7 +228,7 @@ router.post('/vacation/handle/detail', function(req, res){//参数：id
     function callback(error, response, data) {
         if (!error && response.statusCode == 200) {
           console.log(data);
-          res.json(data);//返回值：包含createTime,description,id,name的对象
+          res.json(data);//返回值：包含createTime,description(处理userID和userName相关),id,name的对象
         }
         if (!error && response.statusCode == 404) {
           console.log(data);
@@ -238,12 +238,85 @@ router.post('/vacation/handle/detail', function(req, res){//参数：id
     request(options, callback); 
 })
 
-//处理任务
-router.post('/vacation/handle', function(req, res){//参数：id,name(三种任务类型：Handle vacation request,Send confirmation e-mail,Adjust vacation request)
-  //根据name判断当前属于哪个分支，决定处理的variables参数
+//处理任务Handle vacation request(加上对state,result的判断？？？)
+router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(true/false),motivation
+    var mytask=req.body;
+    var method = "POST";
+    var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
+    var params={
+        "action":"complete",
+        "variables":[
+              {
+                "name":"vacationApproved",
+                "value":mytask.approve
+              },{
+                "name":"managerMotivation",
+                "value":mytask.motivation
+              }
+            ]
+      };
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: params
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          //console.log(data); 
+          res.json("success");
+        }else{
+          res.json("fail");
+        }
+    }
+    request(options, callback);
 })
 
-//流程完成后的处理
+//处理任务Adjust vacation request(加上对state,result的判断？？？根据任务id获取流程实例，然后根据流程实例ID设置assignee？？？)
+router.post('/vacation/adjustrequest', function(req, res){//参数：id,numOfDays,startTime,motivation,send
+    var mytask=req.body;
+    var method = "POST";
+    var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
+    var params={
+        "action":"complete",
+        "variables":[
+              {
+                "name":"numberOfDays",
+                "value":mytask.numOfDays
+              },{
+                "name":"startDate",
+                "value":mytask.startTime
+              },{
+                "name":"vacationMotivation",
+                "value":mytask.motivation
+              },{
+                "name":"resendRequest",
+                "value":mytask.send
+              }
+            ]
+      };
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true,
+        body: params
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log(data); 
+          res.json("success");
+        }else{
+          res.json("fail");
+        }
+    }
+    request(options, callback);
+})
 
 //web端历史流程、历史任务、当前任务列表
 
