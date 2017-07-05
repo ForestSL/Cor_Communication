@@ -4,7 +4,15 @@ var mongoose = require('mongoose');
 var VacationSchema = new mongoose.Schema({
   	userID: String,
   	userName: String,
-  	processID: String
+  	processID: String,
+  	state: {
+  		type: String,
+  		default: "running"
+  	},
+  	result: {
+  		type: String,
+  		default: "waiting"
+  	}
 });
 
 module.exports = mongoose.model("Vacation", VacationSchema);

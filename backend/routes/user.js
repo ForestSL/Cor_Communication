@@ -3,6 +3,7 @@ var router = express.Router();//定义router获取Router()方法库
 var User = require('../models/user');//定义User获取之前建立的User数据模型
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
 var Count = require('../models/count');
+var request = require('request');
 
 /**
  * @swagger
@@ -69,7 +70,32 @@ router.post("/", function(req, res, next){//req:姓名、电话
 							return res.status(400).send("err in post /user");
 						} else {
 							//console.log(78);
-							return res.status(200).json("success");//res
+							//return res.status(200).json("success");//res
+							
+							//--极光推送注册
+          					/*var method = "GET";
+          					var proxy_url = "https://api.im.jpush.cn/v1/users";
+          					var params={
+          						"username":user.userPhone,
+          						"password":user.userPwd
+          					};
+
+							//Basic base64_auth_string=base64(c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213);
+          					var options = {
+            					headers: {"Authorization": base64("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213")},
+            					url: proxy_url,
+            					method: method,
+            					json: true,
+            					body: params
+          					};
+
+          					function callback(error, response, data) {
+            					console.log(data);    
+            					return res.status(200).json("success");//res       					
+            				}
+          					request(options, callback);*/
+          					//--极光推送注册
+
 						}
 					})
 				})

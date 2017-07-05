@@ -238,46 +238,316 @@ router.post('/vacation/handle/detail', function(req, res){//参数：id
     request(options, callback); 
 })
 
-//处理任务Handle vacation request(加上对state,result的判断？？？)
+//处理name为Handle vacation request的任务
 router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(true/false),motivation
-    var mytask=req.body;
-    var method = "POST";
+  //根据任务ID获取流程ID
+    var mytask = req.body;
+    var method = "GET";
     var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
-    var params={
-        "action":"complete",
-        "variables":[
-              {
-                "name":"vacationApproved",
-                "value":mytask.approve
-              },{
-                "name":"managerMotivation",
-                "value":mytask.motivation
-              }
-            ]
-      };
 
     var options = {
       headers: {"Connection": "close"},
         url: proxy_url,
         method: method,
-        json: true,
-        body: params
+        json: true
     };
 
     function callback(error, response, data) {
         if (!error && response.statusCode == 200) {
-          //console.log(data); 
-          res.json("success");
-        }else{
-          res.json("fail");
+          console.log(data.processInstanceId);//获取流程实例id
+          //res.json(data);
+          if(mytask.approve=="false"){//拒绝请假
+            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"disapprove"}, function (err, vas) {
+              if (err) {
+                return res.status(400).send("err in post /task/vacation/handlerequest");
+              } else {
+                console.log("更新成功");
+                //return res.status(200).json("success");//res
+                var method1 = "POST";
+                var proxy_url1 = baseUrl+"runtime/tasks/"+mytask.id;
+                var params1={
+                  "action":"complete",
+                  "variables":[
+                    {
+                      "name":"vacationApproved",
+                      "value":mytask.approve
+                    },{
+                      "name":"managerMotivation",
+                      "value":mytask.motivation
+                    }
+                  ]
+                };
+
+                var options1 = {
+                  headers: {"Connection": "close"},
+                  url: proxy_url1,
+                  method: method1,
+                  json: true,
+                  body: params1
+                };
+
+                function callback1(error1, response1, data1) {
+                  if (!error1 && response1.statusCode == 200) {
+                    //console.log(data); 
+                    res.json("success");
+                  }else{
+                    res.json("fail");
+                  }
+                }
+                request(options1, callback1);
+              }
+            })
+          }else if(mytask.approve=="true"){//同意请假
+            Vacation.update({processID: data.processInstanceId}, {state: "complete",result:"approve"}, function (err, vas) {
+              if (err) {
+                return res.status(400).send("err in post /task/vacation/handlerequest");
+              } else {
+                console.log("更新成功");
+                //return res.status(200).json("success");//res
+                var method1 = "POST";
+                var proxy_url1 = baseUrl+"runtime/tasks/"+mytask.id;
+                var params1={
+                  "action":"complete",
+                  "variables":[
+                    {
+                      "name":"vacationApproved",
+                      "value":mytask.approve
+                    },{
+                      "name":"managerMotivation",
+                      "value":mytask.motivation
+                    }
+                  ]
+                };
+
+                var options1 = {
+                  headers: {"Connection": "close"},
+                  url: proxy_url1,
+                  method: method1,
+                  json: true,
+                  body: params1
+                };
+
+                function callback1(error1, response1, data1) {
+                  if (!error1 && response1.statusCode == 200) {
+                    //console.log(data); 
+                    res.json("success");
+                  }else{
+                    res.json("fail");
+                  }
+                }
+                request(options1, callback1);
+              }
+            })
+          }
+
+        }
+        if (!error && response.statusCode == 404) {
+          console.log(data);
+          res.json("notfound");//返回值：notfound
         }
     }
-    request(options, callback);
+    request(options, callback); 
+ 
 })
 
-//处理任务Adjust vacation request(加上对state,result的判断？？？根据任务id获取流程实例，然后根据流程实例ID设置assignee？？？)
-router.post('/vacation/adjustrequest', function(req, res){//参数：id,numOfDays,startTime,motivation,send
-    var mytask=req.body;
+//处理name为Adjust vacation request的任务(加上对state,result的判断？？？根据任务id获取流程实例，然后根据流程实例ID获取新的任务ID设置assignee？？？)
+router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,numOfDays,startTime,motivation,send
+  //根据原先任务ID获取流程ID
+    var mytask = req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log(data.processInstanceId);//获取到流程ID
+          //res.json(data);
+          //更新数据模型
+          if(mytask.send=="false"){//不再重发
+            Vacation.update({processID: data.processInstanceId}, {state: "complete",result:"disapprove"}, function (err, vas) {
+              if (err) {
+                return res.status(400).send("err in post /task/vacation/adjustrequest");
+              } else {
+                console.log("更新成功");
+                //return res.status(200).json("success");//res
+                //处理任务
+                var method1 = "POST";
+                var proxy_url1 = baseUrl+"runtime/tasks/"+mytask.id;
+                var params1={
+                  "action":"complete",
+                  "variables":[
+                    {
+                      "name":"numberOfDays",
+                      "value":mytask.numOfDays
+                    },{
+                      "name":"startDate",
+                      "value":mytask.startTime
+                    },{
+                      "name":"vacationMotivation",
+                      "value":mytask.motivation
+                    },{
+                      "name":"resendRequest",
+                      "value":mytask.send
+                    }
+                  ]
+                };
+
+                var options1 = {
+                  headers: {"Connection": "close"},
+                  url: proxy_url1,
+                  method: method1,
+                  json: true,
+                  body: params1
+                };
+
+                function callback1(error1, response1, data1) {
+                  if (!error1 && response1.statusCode == 200) {
+                    console.log(data); 
+                    res.json("success");//返回值
+                  }else{
+                    res.json("fail");//返回值
+                  }
+                }
+                request(options1, callback1);
+              }
+            })
+          }else if(mytask.send=="true"){//重发(有错误？？？)
+            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting"}, function (err, vas) {
+              if (err) {
+                return res.status(400).send("err in post /task/vacation/adjustrequest");
+              } else {
+                console.log("更新成功");
+                //return res.status(200).json("success");//res
+                //处理任务
+                var method1 = "POST";
+                var proxy_url1 = baseUrl+"runtime/tasks/"+mytask.id;
+                var params1={
+                  "action":"complete",
+                  "variables":[
+                    {
+                      "name":"numberOfDays",
+                      "value":mytask.numOfDays
+                    },{
+                      "name":"startDate",
+                      "value":mytask.startTime
+                    },{
+                      "name":"vacationMotivation",
+                      "value":mytask.motivation
+                    },{
+                      "name":"resendRequest",
+                      "value":mytask.send
+                    }
+                  ]
+                };
+
+                var options1 = {
+                  headers: {"Connection": "close"},
+                  url: proxy_url1,
+                  method: method1,
+                  json: true,
+                  body: params1
+                };
+
+                function callback1(error1, response1, data1) {
+                  if (!error1 && response1.statusCode == 200) {
+                    console.log(data); 
+                    //res.json("success");
+                    //根据流程ID获取新的任务ID
+                    var method2 = "GET";
+                    var proxy_url2 = baseUrl+"runtime/tasks?processInstanceId="+data.processInstanceId;
+
+                    var options2 = {
+                      headers: {"Connection": "close"},
+                      url: proxy_url,
+                      method: method,
+                      json: true
+                    };
+
+                    function callback2(error2, response2, data2) {
+                      //console.log(data);
+                      if (!error2 && response2.statusCode == 200) {
+                        console.log(data2.data[0].id);//获取新的任务id
+                        //res.json(data2.data[0]);
+                        //根据任务ID更新assignee(根据用户ID确认部长ID)
+          //设置该任务的处理人assignee为部长
+          var assignee;
+          User.findOne({userID: mytask.userID}, function (err, users) {
+            if (err) {
+              //console.log(data2);
+              return res.status(400).send("err in post /task/vacation/adjustrequest");
+            } else {
+              //console.log(users.userDepart);
+              Depart.findOne({departID:users.userDepart},function(err2, departs){
+                if(err2){
+                  return res.status(400).send("error");
+                }else{
+                  assignee=departs.leaderID;//获取部长ID（处理人ID）
+                  console.log("assignee:");
+                  console.log(assignee);
+                  console.log(taskID);
+
+                  var method3 = "PUT";
+                  var proxy_url3 = baseUrl+"runtime/tasks/"+taskID;
+                  var params3 = {
+                   "assignee":assignee
+                  };
+
+                  var options3 = {
+                   headers: {"Connection": "close"},
+                   url: proxy_url3,
+                   method: method3,
+                   json: true,
+                   body: params3
+                  };
+
+                  function callback3(error3, response3, data3) {
+                    console.log(data3);
+                    if (!error3 && response3.statusCode == 200) {
+                      console.log("success"); 
+                      res.json("success");//返回值：success
+                  }
+                } 
+                request(options3, callback3);
+
+                }
+              })
+            }
+          })
+
+
+                      }
+                      if (!error2 && response2.statusCode == 400) {
+                        console.log(data2);
+                        res.json("fail");//返回值：fail
+                      }
+                    }
+                    request(options2, callback2);
+
+
+                  }else{
+                    res.json("fail");
+                  }
+                }
+                request(options1, callback1);
+              }
+            })
+          }
+
+        }
+        if (!error && response.statusCode == 404) {
+          console.log(data);
+          res.json("notfound");//返回值：notfound
+        }
+    }
+    request(options, callback); 
+
+ /*   var mytask=req.body;
     var method = "POST";
     var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
     var params={
@@ -315,7 +585,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：id,numOfDay
           res.json("fail");
         }
     }
-    request(options, callback);
+    request(options, callback);*/
 })
 
 //web端历史流程、历史任务、当前任务列表
