@@ -82,6 +82,7 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
 			}
 			else {
 				return res.status(200).json("exist");//res:已经存在该部门
+
 			}
 		})
 	//}else{
@@ -316,7 +317,15 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 					if (err) {
 						return res.status(400).send("err in post /depart/update/name");
 					} else {
-						return res.status(400).send("success");
+						//return res.status(400).send("success");
+						//修改员工对应部门名称
+						User.update({userDepart: depart.departID}, {DepartName: depart.departName}, function (err, users) {
+							if(err){
+								return res.status(400).send("err in post /depart/update/name");
+							}else {
+								return res.status(400).send("success");
+							}
+						})
 					}
 				})
 			}
