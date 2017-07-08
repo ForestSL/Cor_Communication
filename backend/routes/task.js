@@ -350,7 +350,7 @@ router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(
  
 })
 
-//处理name为Adjust vacation request的任务(加上对state,result的判断？？？根据任务id获取流程实例，然后根据流程实例ID获取新的任务ID设置assignee？？？)
+//处理name为Adjust vacation request的任务
 router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,numOfDays,startTime,motivation,send
   //根据原先任务ID获取流程ID
     var mytask = req.body;
@@ -417,7 +417,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
                 request(options1, callback1);
               }
             })
-          }else if(mytask.send=="true"){//重发(有错误？？？)
+          }else if(mytask.send == "true"){//重发(有错误？？？)
             Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting"}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/adjustrequest");
@@ -456,7 +456,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
 
                 function callback1(error1, response1, data1) {
                   if (!error1 && response1.statusCode == 200) {
-                    console.log(data); 
+                    //console.log(data1); 
                     //res.json("success");
                     //根据流程ID获取新的任务ID
                     var method2 = "GET";
@@ -464,8 +464,8 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
 
                     var options2 = {
                       headers: {"Connection": "close"},
-                      url: proxy_url,
-                      method: method,
+                      url: proxy_url2,
+                      method: method2,
                       json: true
                     };
 
@@ -475,52 +475,49 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
                         console.log(data2.data[0].id);//获取新的任务id
                         //res.json(data2.data[0]);
                         //根据任务ID更新assignee(根据用户ID确认部长ID)
-          //设置该任务的处理人assignee为部长
-          var assignee;
-          User.findOne({userID: mytask.userID}, function (err, users) {
-            if (err) {
-              //console.log(data2);
-              return res.status(400).send("err in post /task/vacation/adjustrequest");
-            } else {
-              //console.log(users.userDepart);
-              Depart.findOne({departID:users.userDepart},function(err2, departs){
-                if(err2){
-                  return res.status(400).send("error");
-                }else{
-                  assignee=departs.leaderID;//获取部长ID（处理人ID）
-                  console.log("assignee:");
-                  console.log(assignee);
-                  console.log(taskID);
+                        //设置该任务的处理人assignee为部长
+                        var assignee;
+                        User.findOne({userID: mytask.userID}, function (err, users) {
+                          if (err) {
+                            //console.log(data2);
+                            return res.status(400).send("err in post /task/vacation/adjustrequest");
+                          } else {
+                            //console.log(users.userDepart);
+                            Depart.findOne({departID:users.userDepart},function(err2, departs){
+                              if(err2){
+                                return res.status(400).send("error");
+                              }else{
+                                assignee=departs.leaderID;//获取部长ID（处理人ID）
+                                console.log("assignee:");
+                                console.log(assignee);
+                                console.log(data2.data[0].id);
 
-                  var method3 = "PUT";
-                  var proxy_url3 = baseUrl+"runtime/tasks/"+taskID;
-                  var params3 = {
-                   "assignee":assignee
-                  };
+                                var method3 = "PUT";
+                                var proxy_url3 = baseUrl+"runtime/tasks/"+data2.data[0].id;
+                                var params3 = {
+                                  "assignee":assignee
+                                };
 
-                  var options3 = {
-                   headers: {"Connection": "close"},
-                   url: proxy_url3,
-                   method: method3,
-                   json: true,
-                   body: params3
-                  };
+                                var options3 = {
+                                  headers: {"Connection": "close"},
+                                  url: proxy_url3,
+                                  method: method3,
+                                  json: true,
+                                  body: params3
+                                };
 
-                  function callback3(error3, response3, data3) {
-                    console.log(data3);
-                    if (!error3 && response3.statusCode == 200) {
-                      console.log("success"); 
-                      res.json("success");//返回值：success
-                  }
-                } 
-                request(options3, callback3);
-
-                }
-              })
-            }
-          })
-
-
+                                function callback3(error3, response3, data3) {
+                                  console.log(data3);
+                                  if (!error3 && response3.statusCode == 200) {
+                                    console.log("success"); 
+                                    res.json("success");//返回值：success
+                                  }
+                                } 
+                                request(options3, callback3);
+                              }
+                            })
+                          }
+                        })
                       }
                       if (!error2 && response2.statusCode == 400) {
                         console.log(data2);
@@ -528,8 +525,6 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
                       }
                     }
                     request(options2, callback2);
-
-
                   }else{
                     res.json("fail");
                   }
@@ -538,7 +533,6 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
               }
             })
           }
-
         }
         if (!error && response.statusCode == 404) {
           console.log(data);
