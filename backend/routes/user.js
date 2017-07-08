@@ -70,7 +70,7 @@ router.post("/", function(req, res, next){//req:姓名、电话
 							return res.status(400).send("err in post /user");
 						} else {
 							//console.log(78);
-							//return res.status(200).json("success");//res
+							return res.status(200).json("success");//res
 							
 							//--极光推送注册
           					/*var method = "GET";

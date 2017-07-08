@@ -323,7 +323,15 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 							if(err){
 								return res.status(400).send("err in post /depart/update/name");
 							}else {
-								return res.status(400).send("success");
+								//return res.status(400).send("success");
+								//修改父部门名称
+								Depart.update({parentID: depart.departID}, {parentName: depart.departName}, function (err, des) {
+									if(err){
+										return res.status(400).send("err in post /depart/update/name");
+									}else {
+										return res.status(400).send("success");
+									}
+								})
 							}
 						})
 					}
@@ -352,6 +360,17 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 //删除所有部门信息（开发者测试数据使用）
 router.delete("/", function(req, res, next){
 	Depart.remove({}, function(err, departs){
+		if(err){
+			return res.status(400).send("err in delete /depart");
+		}else{
+			return res.status(200).json("success");
+		}
+	})
+});
+
+router.delete("/id", function(req, res, next){
+	var p=req.body;
+	Depart.remove({departID:p.departID}, function(err, departs){
 		if(err){
 			return res.status(400).send("err in delete /depart");
 		}else{
