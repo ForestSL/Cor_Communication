@@ -53,7 +53,6 @@ var request = require('request');
 router.post("/", function(req, res, next){//req:姓名、电话
 	//if(req.session.admin) {
 		var user = req.body;
-		user.userPwd = "000000";//初始密码默认为手机号
 		User.findOne({userPhone: user.userPhone}, function (err, users) {//根据帐号（电话）先看是否已经存在该用户
 			if (users == null) {
 				//查找部门ID当前数量
@@ -70,30 +69,31 @@ router.post("/", function(req, res, next){//req:姓名、电话
 							return res.status(400).send("err in post /user");
 						} else {
 							//console.log(78);
-							return res.status(200).json("success");//res
+							//return res.status(200).json("success");//res
 							
 							//--极光推送注册
-          					/*var method = "GET";
+          					var method = "POST";
           					var proxy_url = "https://api.im.jpush.cn/v1/users";
-          					var params={
-          						"username":user.userPhone,
-          						"password":user.userPwd
-          					};
 
-							//Basic base64_auth_string=base64(c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213);
+          					var b=new Buffer("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213");
+							var base64_auth_string=b.toString('base64');
           					var options = {
-            					headers: {"Authorization": base64("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213")},
+            					headers: {"Authorization": "Basic "+base64_auth_string},
             					url: proxy_url,
             					method: method,
             					json: true,
-            					body: params
+            					body: [{
+          						"username":user.userPhone,
+          						"password":user.userPwd,
+          						"nickname":user.userName
+          						}]
           					};
 
           					function callback(error, response, data) {
             					console.log(data);    
             					return res.status(200).json("success");//res       					
             				}
-          					request(options, callback);*/
+          					request(options, callback);
           					//--极光推送注册
 
 						}
@@ -106,6 +106,18 @@ router.post("/", function(req, res, next){//req:姓名、电话
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
+});
+
+//用户禁用/启用状态
+router.post("/state",function(req,res,next){
+	var user=req.body;
+	User.update({userID:user.userID},{state:user.state},function(err,users){
+		if(err){
+			return res.status(400).send("err in post /user/state");
+		}else{
+			return res.status(200).json("success");//res
+		}
+	})
 });
 
 /**
@@ -276,7 +288,15 @@ router.post("/delete", function(req, res, next){//req：用户ID
 				return res.status(400).send("err in post /user/delete");
 			} else {
 				console.log("删除成功");
-				return res.status(200).json("success");//res
+				//return res.status(200).json("success");
+				//若该用户是部长，去除部长职位
+				Depart.update({leaderID:user.userID},{leaderID:0,leaderName:"null"},function(err,departs){
+					if(err){
+						return res.status(400).send("err in post /user/delete");
+					}else{
+						return res.status(200).send("success");
+					}
+				})
 			}
 		})
 	//}else{
@@ -306,15 +326,37 @@ router.post("/delete", function(req, res, next){//req：用户ID
  *         description: success
  */
 //根据ID更新用户密码：用户
-router.post("/update/pwd", function(req, res, next){//req:用户ID、用户新密码
+router.post("/update/pwd", function(req, res, next){//req:userID,userPhone,oldPwd,newPwd
 	//if(req.session.user) {
 		var user = req.body;
-		User.update({userID: user.userID}, {userPwd: user.userPwd}, function (err, users) {
+		User.update({userID: user.userID}, {userPwd: user.newPwd}, function (err, users) {
 			if (err) {
 				return res.status(400).send("err in post /user/update/pwd");
 			} else {
 				console.log("更新成功");
-				return res.status(200).json("success");//res
+				//return res.status(200).json("success");//res
+				//--极光推送注册
+          					var method = "PUT";
+          					var proxy_url = "https://api.im.jpush.cn/v1/users/"+user.userPhone+"/password";
+
+          					var b=new Buffer("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213");
+							var base64_auth_string=b.toString('base64');
+          					var options = {
+            					headers: {"Authorization": "Basic "+base64_auth_string},
+            					url: proxy_url,
+            					method: method,
+            					json: true,
+            					body: {
+          						"new_password":user.newPwd
+          						}
+          					};
+
+          					function callback(error, response, data) {
+            					console.log(data);    
+            					return res.status(200).json("success");//res       					
+            				}
+          					request(options, callback);
+          					//--极光推送注册
 			}
 		})
 	//}else{
@@ -512,9 +554,14 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 				return res.status(200).json("fail");
 			}
 			else{
-				console.log("登录成功");
+				//console.log("登录成功");
 				req.session.user=user;
-				return res.status(200).json(users);//res
+				//return res.status(200).json(users);//res
+				//判断用户状态on、off
+				if(users.state=="off")
+					return res.status(200).json("forbidden");//res
+				else
+					return res.status(200).json(users);//res
 			}
 		}
 	})

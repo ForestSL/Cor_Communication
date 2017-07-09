@@ -14,7 +14,10 @@ var UserSchema = new mongoose.Schema({
     default: "null"
   },
   userPhone: String,
-  userPwd: String,
+  userPwd: {
+    type:String,
+    default:"000000"
+  },
   userDepart: {
     type: Number,
     default: 0
@@ -27,10 +30,10 @@ var UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },//部长部门ID，普通部员为0
-  create_at: {
-    type: Date,
-    default: Date.now
-  }
+  state:{
+    type: String,
+    default: "on"
+  }//用户状态，启用on，禁用off
 });
 
 //数据模型UserSchema通过User方法名，可被其他module调用

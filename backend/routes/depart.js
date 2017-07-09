@@ -318,13 +318,15 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 						return res.status(400).send("err in post /depart/update/name");
 					} else {
 						//return res.status(400).send("success");				
-								//修改父部门名称
-								Depart.update({parentID: depart.departID}, {parentName: depart.departName}, function (err, des) {
+								//修改父部门名称:{upsert: false, multi: true}批量更新写法
+								Depart.update({parentID: depart.departID}, {$set:{parentName: depart.departName}},{upsert: false, multi: true}, function (err, des) {
 									if(err){
 										return res.status(400).send("err in post /depart/update/name");
 									}else {
-										return res.status(400).send("success");
+										//return res.status(200).send("success");
+										console.log("update success");
 									}
+									return res.status(200).send("success");
 								})						
 					}
 				})
