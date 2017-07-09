@@ -582,7 +582,17 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
     request(options, callback);*/
 })
 
-//web端历史流程、历史任务、当前任务列表
+//删除用户列表任务
+router.post('/vacation/delete',function(req,res){//参数：processID
+  var user=req.body;
+  Vacation.remove({processID:user.processID},function(err,users){
+    if(err){
+      return res.status(400).send("err in post /task/vacation/delete");
+    }else{
+      return res.status(200).json("success");//返回值
+    }
+  })
+})
 
 //---------------------------------部署--------------------------------------
 
