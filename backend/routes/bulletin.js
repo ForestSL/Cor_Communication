@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var Bulletin = require('../models/bulletin');//定义Bulletin获取之前建立的Bulletin数据模型
 var Depart = require('../models/depart');
-//var Lib = require('mylib');
 
 /**
  * @swagger
@@ -18,6 +17,12 @@ var Depart = require('../models/depart');
  *       content:
  *         type: string
  *       time:
+ *         type: string
+ *       html:
+ *         type: string
+ *       delta:
+ *         type: string
+ *       state:
  *         type: string
  */
 
@@ -43,7 +48,7 @@ var Depart = require('../models/depart');
  *         description: 创建成功
  */
 //新建公告：管理员
-router.post("/", function(req, res, next){//req:部门名称、公告名称、公告内容、时间
+router.post("/", function(req, res, next){//req:departName,name,content,time,html,delta
 	//console.log(req.session.admin);
 	//if(req.session.admin) {
 		var bulletin = req.body;
@@ -122,8 +127,8 @@ router.get("/", function(req, res, next){//无参数
  *         schema:
  *           $ref: '#/definitions/Bulletin'
  */
-//查找公告：用户
-router.post("/search", function(req, res, next){//req:部门名称
+//返回该用户所有公告列表：用户（当前app使用接口）
+router.post("/search", function(req, res, next){//req:DepartName
 	var user = req.body;
 	Bulletin.find({ departName: user.DepartName}, function(err, bulletins){
 		if(err){
@@ -131,6 +136,130 @@ router.post("/search", function(req, res, next){//req:部门名称
 		}else{
 			console.log(bulletins);
 			return res.status(200).json(bulletins);//res:返回该部门现有公告
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /bulletin/search/unread/list:
+ *   post:
+ *     tags:
+ *       - Bulletin
+ *     summary: 用户查看未读的公告列表
+ *     description: 用户查看未读的公告列表
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bulletin(departName)
+ *         description: Bulletin object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ *     responses:
+ *       200:
+ *         description: 未读的公告列表
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ */
+//用户查看未读的公告列表
+router.post("/search/unread/list",function(req,res,next){//参数：departName
+	var user = req.body;
+	Bulletin.find( {departName: user.departName}, function(err, bulletins){
+		if(err){
+			return res.status(400).send("err in post /bulletin");
+		}else{
+			console.log(bulletins);
+			//return res.status(200).json(bulletins);
+			Bulletin.find( {state: "unread"}, function(err, bts){
+				if(err){
+					return res.status(400).send("err in post /bulletin");
+				}else{
+					console.log(bulletins);
+					return res.status(200).json(bulletins);//res:返回该部门现有未读公告
+				}
+			})
+		}
+	})
+});
+
+/**
+ * @swagger
+ * /bulletin/search/unread/detail:
+ *   post:
+ *     tags:
+ *       - Bulletin
+ *     summary: 用户查看未读的公告详情
+ *     description: 用户查看未读的公告详情
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bulletin(time)
+ *         description: Bulletin object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ *     responses:
+ *       200:
+ *         description: 未读的公告详情
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ */
+//用户查看未读的公告详情
+router.post("/search/unread/detail",function(req,res,next){//参数：time
+	var user = req.body;
+	Bulletin.find( {time: user.time}, function(err, bulletins){
+		if(err){
+			return res.status(400).send("err in post /bulletin");
+		}else{
+			console.log(bulletins);
+			return res.status(200).json(bulletins);
+		}
+	})	
+});
+
+/**
+ * @swagger
+ * /bulletin/search/read:
+ *   post:
+ *     tags:
+ *       - Bulletin
+ *     summary: 用户查看已读的公告
+ *     description: 用户查看已读的公告
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bulletin(departName)
+ *         description: Bulletin object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ *     responses:
+ *       200:
+ *         description: 已读的公告
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ */
+//用户查看已读的公告
+router.post("/search/read",function(req,res,next){//参数：departName
+	var user = req.body;
+	Bulletin.find( {departName: user.departName}, function(err, bulletins){
+		if(err){
+			return res.status(400).send("err in post /bulletin");
+		}else{
+			console.log(bulletins);
+			//return res.status(200).json(bulletins);//res:返回该部门现有已读公告
+			Bulletin.find( {state: "read"}, function(err, bts){
+				if(err){
+					return res.status(400).send("err in post /bulletin");
+				}else{
+					console.log(bulletins);
+					return res.status(200).json(bulletins);//res:返回该部门现有已读公告
+				}
+			})
 		}
 	})
 });

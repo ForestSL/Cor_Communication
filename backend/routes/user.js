@@ -26,6 +26,8 @@ var request = require('request');
  *         type: string
  *       isLeader:
  *         type: number
+ *       state:
+ *         type: string
  */
 
 /**

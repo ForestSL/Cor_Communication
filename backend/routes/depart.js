@@ -323,10 +323,10 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 									if(err){
 										return res.status(400).send("err in post /depart/update/name");
 									}else {
-										//return res.status(200).send("success");
+										return res.status(200).send("success");
 										console.log("update success");
 									}
-									return res.status(200).send("success");
+									//return res.status(200).send("success");
 								})						
 					}
 				})
