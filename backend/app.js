@@ -52,8 +52,8 @@ var swaggerDefinition = {
   },
   host: '115.159.38.100:3000',
   //host: 'localhost:3000',
-  //basePath: 'http://115.159.38.100:3000',
-  basePath: '/',
+  basePath: 'http://115.159.38.100:3000',
+  //basePath: '/',
 };
 
 // options for the swagger docs

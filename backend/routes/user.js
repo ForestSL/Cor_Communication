@@ -108,6 +108,25 @@ router.post("/", function(req, res, next){//req:姓名、电话
 	//}
 });
 
+/**
+ * @swagger
+ * /user/state:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: web用户禁用、启用app用户
+ *     description: 用户禁用，启用
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(userID,state)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //用户禁用/启用状态
 router.post("/state",function(req,res,next){
 	var user=req.body;
@@ -569,7 +588,7 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 
 /**
  * @swagger
- * /user:
+ * /user/logout:
  *   get:
  *     tags:
  *       - User
@@ -670,42 +689,6 @@ router.post("/remove/staff", function(req, res, next){//req:userID
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
-});
-
-/**
- * @swagger
- * /user/task/author:
- *   post:
- *     tags:
- *       - Task
- *     summary: 当前用户提交的任务情况【暂未使用】
- *     description: 根据提交者ID查看任务
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: user(userID)
- *         description: User object
- *         in: body
- *         required: true
- *         schema:
- *           $ref: '#/definitions/User'
- *     responses:
- *       200:
- *         description: 返回该用户提交的任务
- *         schema:
- *           $ref: '#/definitions/Task'
- */
-//用户查看所有自己提交的任务情况：根据userID=authorID(用户ID与发起任务发起者ID相同的人)查看公告
-router.post("/task/author", function(req, res, next){//req:userID
-	var user=req.body;
-	Task.find({ authorID: user.userID }, function(err, tasks){
-		if(err){
-			return res.status(400).send("err in post /task");
-		}else{
-			console.log(tasks);
-			return res.status(200).json(tasks);//res
-		}
-	})
 });
 
 module.exports = router;

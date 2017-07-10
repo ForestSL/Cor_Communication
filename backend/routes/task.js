@@ -7,6 +7,39 @@ var Depart = require('../models/depart');
 
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
+/**
+ * @swagger
+ * definition:
+ *   Vacation:
+ *     properties:
+ *       userID:
+ *         type: string
+ *       userName:
+ *         type: string
+ *       processID:
+ *         type: string
+ *       state:
+ *         type: string
+ *       result:
+ *         type: string
+ */
+
+/**
+ * @swagger
+ * /task:
+ *   get:
+ *     tags:
+ *       - Vacation
+ *     summary: 返回所有请假相关信息
+ *     description: 返回所有请假任务
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 所有请假任务
+ *         schema:
+ *           $ref: '#/definitions/Vacation'
+ */
 //查看vacation数据
 router.get("/", function(req, res, next){//无参数
   Vacation.find({}, function(err, tests){
@@ -21,6 +54,25 @@ router.get("/", function(req, res, next){//无参数
 
 //---------------------------------请假--------------------------------------
 
+/**
+ * @swagger
+ * /task/vacation/request:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户启动请假流程
+ *     description: 用户启动请假流程
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(userID,userName,numOfDays,startTime,motivation)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success,fail,error
+ */
 //启动请假任务:启动请假流程实例、存储流程实例ID至数据库、设置任务的初始处理人（部长）
 router.post('/vacation/request', function(req, res){//参数：userID,userName,numOfDays,startTime,motivation
     var vacation = req.body;
@@ -144,6 +196,27 @@ router.post('/vacation/request', function(req, res){//参数：userID,userName,n
     request(options, callback);
 })
 
+/**
+ * @swagger
+ * /task/vacation/list:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户当前已有任务列表
+ *     description: 用户当前任务列表
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(userID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 所有vacation对象数据
+ *         schema:
+ *           $ref: '#/definitions/Vacation'
+ */
 //用户当前已有任务列表
 router.post('/vacation/list', function(req, res){//参数：userID
   var user = req.body;
@@ -157,6 +230,25 @@ router.post('/vacation/list', function(req, res){//参数：userID
   })
 })
 
+/**
+ * @swagger
+ * /task/vacation/list/detail:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户点击任务列表查看详情
+ *     description: 任务详情
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(processID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 任务对象数据
+ */
 //点击列表查看任务详情
 router.post('/vacation/list/detail', function(req, res){//参数：processID
     var pa = req.body;
@@ -184,6 +276,25 @@ router.post('/vacation/list/detail', function(req, res){//参数：processID
     request(options, callback);
 })
 
+/**
+ * @swagger
+ * /task/vacation/handle/list:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户当前待处理任务列表
+ *     description: 待处理任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(userID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 任务对象数据数组,fail 
+ */
 //用户当前待处理任务列表
 router.post('/vacation/handle/list', function(req, res){//参数：userID
           var user=req.body;
@@ -212,6 +323,25 @@ router.post('/vacation/handle/list', function(req, res){//参数：userID
           request(options, callback);
 })
 
+/**
+ * @swagger
+ * /task/vacation/handle/detail:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户点击待处理任务列表查看详情
+ *     description: 待处理任务详情
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(id)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 待处理任务对象数据
+ */
 //点击列表查看待处理任务详情
 router.post('/vacation/handle/detail', function(req, res){//参数：id
     var mytask = req.body;
@@ -238,6 +368,25 @@ router.post('/vacation/handle/detail', function(req, res){//参数：id
     request(options, callback); 
 })
 
+/**
+ * @swagger
+ * /task/vacation/handlerequest:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户处理Handle vacation request任务
+ *     description: 处理任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(id,approve(true/false),motivation)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success,fail,notfound
+ */
 //处理name为Handle vacation request的任务
 router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(true/false),motivation
   //根据任务ID获取流程ID
@@ -346,10 +495,28 @@ router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(
           res.json("notfound");//返回值：notfound
         }
     }
-    request(options, callback); 
- 
+    request(options, callback);  
 })
 
+/**
+ * @swagger
+ * /task/vacation/adjustrequest:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户处理Adjust vacation request任务
+ *     description: 处理任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(userID,id,numOfDays,startTime,motivation,send)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success,fail,notfound
+ */
 //处理name为Adjust vacation request的任务
 router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,numOfDays,startTime,motivation,send
   //根据原先任务ID获取流程ID
@@ -417,7 +584,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
                 request(options1, callback1);
               }
             })
-          }else if(mytask.send == "true"){//重发(有错误？？？)
+          }else if(mytask.send == "true"){//重发
             Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting"}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/adjustrequest");
@@ -540,48 +707,27 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
         }
     }
     request(options, callback); 
-
- /*   var mytask=req.body;
-    var method = "POST";
-    var proxy_url = baseUrl+"runtime/tasks/"+mytask.id;
-    var params={
-        "action":"complete",
-        "variables":[
-              {
-                "name":"numberOfDays",
-                "value":mytask.numOfDays
-              },{
-                "name":"startDate",
-                "value":mytask.startTime
-              },{
-                "name":"vacationMotivation",
-                "value":mytask.motivation
-              },{
-                "name":"resendRequest",
-                "value":mytask.send
-              }
-            ]
-      };
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true,
-        body: params
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 200) {
-          console.log(data); 
-          res.json("success");
-        }else{
-          res.json("fail");
-        }
-    }
-    request(options, callback);*/
 })
 
+/**
+ * @swagger
+ * /task/vacation/delete:
+ *   post:
+ *     tags:
+ *       - Vacation
+ *     summary: app用户删除任务列表中的任务
+ *     description: 删除任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(processID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //删除用户列表任务
 router.post('/vacation/delete',function(req,res){//参数：processID
   var user=req.body;
