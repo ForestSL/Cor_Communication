@@ -1,10 +1,10 @@
 var mongoose = require('mongoose');
 
-//请假(加数据模型存储state:running,complete和result:approve,disapprove???)
+//请假(加数据模型存储state:running,complete和result:approve,disapprove)
 var VacationSchema = new mongoose.Schema({
-  	userID: String,
+  	userID: Number,
   	userName: String,
-  	processID: String,
+  	processID: Number,
   	state: {
   		type: String,
   		default: "running"
@@ -12,7 +12,13 @@ var VacationSchema = new mongoose.Schema({
   	result: {
   		type: String,
   		default: "waiting"
-  	}
+  	},
+    numOfDays: Number,
+    startTime: String,
+    motivation:{
+      type: String,
+      default: "null"
+    }
 });
 
 module.exports = mongoose.model("Vacation", VacationSchema);

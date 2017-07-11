@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var Admin = require('../models/admin');//定义User获取之前建立的User数据模型
+var session = require('express-session');
 
 /**
  * @swagger
@@ -118,7 +119,9 @@ router.post("/login", function(req, res, next){//req:帐号、密码
 			else{
 				console.log("登录成功");
 				req.session.admin=admin;
-				console.log(req.session.admin);
+				//req.session.save();
+				//console.log(req.sessionID);
+				//console.log(req.session);
 				return res.status(200).json("success");//res
 			}
 		}

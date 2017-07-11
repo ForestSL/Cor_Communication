@@ -225,7 +225,7 @@ router.post('/vacation/list', function(req, res){//参数：userID
       return res.status(400).send("err in get /task");
     }else{
       console.log(tests);
-      return res.status(200).json(tests);//返回值：包含userID,userName,processID,state,result的对象数组
+      return res.status(200).json(tests);//返回值：包含userID,userName,processID,state,result,numOfDays,startTime,motivation的对象数组
     }
   })
 })
@@ -585,12 +585,14 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
               }
             })
           }else if(mytask.send == "true"){//重发
-            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting"}, function (err, vas) {
+            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting",
+              numOfDays:mytask.numOfDays,startTime:mytask.startTime,motivation:mytask.motivation}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/adjustrequest");
               } else {
                 console.log("更新成功");
                 //return res.status(200).json("success");//res
+
                 //处理任务
                 var method1 = "POST";
                 var proxy_url1 = baseUrl+"runtime/tasks/"+mytask.id;

@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var Bulletin = require('../models/bulletin');//定义Bulletin获取之前建立的Bulletin数据模型
 var Depart = require('../models/depart');
+var session = require('express-session');
 
 /**
  * @swagger
@@ -49,7 +50,8 @@ var Depart = require('../models/depart');
  */
 //新建公告：管理员
 router.post("/", function(req, res, next){//req:departName,name,content,time,html,delta
-	//console.log(req.session.admin);
+	//console.log(req.sessionID);
+	//console.log(req.session);
 	//if(req.session.admin) {
 		var bulletin = req.body;
 		//var promise = new mongoose.Promise();

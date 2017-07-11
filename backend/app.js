@@ -81,10 +81,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cookieParser('sessiontest'));
 app.use(session({
+  name: "sl",
   store: new MongoStore({
     url: "mongodb://localhost/test_session"//新建数据库
   }),
-  cookie: { maxAge: 1 * 60 * 60 * 1000 }, //默认1小时
+  cookie: { 
+    secure: false
+  }, //默认1小时
   secret: 'sessiontest',
   resave: false,
   saveUninitialized: true
