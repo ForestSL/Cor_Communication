@@ -31,6 +31,10 @@ var TaskSchema = new mongoose.Schema({
     receiver:{
       type:Number,
       default:0
+    },
+    create_at: {
+      type: Date,
+      default: Date.now
     }
 });
 
