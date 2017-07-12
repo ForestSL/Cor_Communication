@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var request = require('request');
-var Task = require('../models/Task');
-var Deploy = require('../models/Deploy');
+var Task = require('../models/task');
+var Deploy = require('../models/deploy');
 var User = require('../models/user');
 var Depart = require('../models/depart');
 var Count = require('../models/count');
+var Safe = require('../models/safe');
 
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
@@ -791,8 +792,31 @@ router.get('/deploy', function(req, res){
   })
 });
 
+/**
+ * @swagger
+ * /task/deploy/upload:
+ *   post:
+ *     tags:
+ *       - Deploy
+ *     summary: web端流程部署(登录权限验证)
+ *     description: 流程部署
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Deploy(name,file)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success,error
+ */
 //流程部署(参数：name,file):web端
 router.post('/deploy/upload', function(req, res){
+  Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
   var deploy=req.body;
   //判断deploy是否为空，空就先创建一条请假部署记录
   Deploy.findOne({},function(e,r){
@@ -814,10 +838,35 @@ router.post('/deploy/upload', function(req, res){
       }
     })
   })
+  }
+  })
 });
 
+/**
+ * @swagger
+ * /task/deploy/delete:
+ *   post:
+ *     tags:
+ *       - Deploy
+ *     summary: web端删除部署列表(登录权限验证)
+ *     description: 删除部署列表
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Deploy(name)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //删除部署列表(参数：name)
 router.post('deploy/delete',function(req,res){
+    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
   var deploy=req.body;
   Deploy.remove({name:deploy.name},function(err,result){
     if(err){
@@ -826,10 +875,35 @@ router.post('deploy/delete',function(req,res){
       return res.status(200).json("success");//res
     }
   })
+}
+})
 });
 
+/**
+ * @swagger
+ * /task/process/delete:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: web端删除流程列表(登录权限验证)
+ *     description: 删除流程列表
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(processID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success,notexist,stillrunning
+ */
 //删除流程列表(参数：processID)
 router.post('/process/delete',function(req,res){
+    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
   var myprocess=req.body;
   Task.findOne({processID:myprocess.processID},function(err,result){
     if(err){
@@ -851,10 +925,31 @@ router.post('/process/delete',function(req,res){
       }
     }
   })
+}
+})
 });
 
 //---------------------------------其他任务--------------------------------------
 
+/**
+ * @swagger
+ * /task/other/request:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: app端启动对应name的任务
+ *     description: app端启动对应name的任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(name,userID,userName,content,receiver)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //app端启动对应name的任务(参数：name,userID,userName,content,receiver),processID自动生成
 router.post('/other/request',function(req,res){
   var other=req.body;
@@ -875,6 +970,25 @@ router.post('/other/request',function(req,res){
   })
 });
 
+/**
+ * @swagger
+ * /task/other/detail:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: app端点击查看非请假任务详情
+ *     description: 点击查看非请假任务详情
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(processID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 任务对象
+ */
 //点击查看非请假任务详情(参数：processID)
 router.post('/other/detail',function(req,res){
   var other=req.body;
@@ -887,6 +1001,25 @@ router.post('/other/detail',function(req,res){
   })
 });
 
+/**
+ * @swagger
+ * /task/handle/list:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: app端用户待处理的非请假任务列表
+ *     description: 用户待处理的非请假任务列表
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(userID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 任务对象数组
+ */
 //用户待处理的非请假任务列表,与请假待处理同用(参数：userID)
 router.post('/other/handle/list',function(req,res){
   var other=req.body;
@@ -899,6 +1032,25 @@ router.post('/other/handle/list',function(req,res){
   })
 });
 
+/**
+ * @swagger
+ * /task/handle/detail:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: app端查看待处理的非请假任务详情
+ *     description: 查看待处理的非请假任务详情
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(processID)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: 任务对象
+ */
 //查看待处理的非请假任务详情(参数：processID)
 router.post('/other/handle/detail',function(req,res){
   var other=req.body;
@@ -911,6 +1063,25 @@ router.post('/other/handle/detail',function(req,res){
   })
 });
 
+/**
+ * @swagger
+ * /task/handle:
+ *   post:
+ *     tags:
+ *       - Task
+ *     summary: app端处理非请假任务
+ *     description: 处理非请假任务
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: Task(processID,result(approve/disapprove),motivation)
+ *         description: object
+ *         in: body
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: success
+ */
 //处理非请假任务(参数：processID,result(approve/disapprove),motivation)
 router.post('/other/handle',function(req,res){
   var other=req.body;

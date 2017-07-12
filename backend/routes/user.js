@@ -4,6 +4,7 @@ var User = require('../models/user');//定义User获取之前建立的User数据
 var Depart = require('../models/depart');//定义Depart获取之前建立的Depart数据模型
 var Count = require('../models/count');
 var request = require('request');
+var Safe = require('../models/safe');
 
 /**
  * @swagger
@@ -54,6 +55,10 @@ var request = require('request');
 //新建用户：管理员
 router.post("/", function(req, res, next){//req:姓名、电话
 	//if(req.session.admin) {
+	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  	if(r==null){
+    	return res.status(200).json("admin login first");
+  	}else{
 		var user = req.body;
 		User.findOne({userPhone: user.userPhone}, function (err, users) {//根据帐号（电话）先看是否已经存在该用户
 			if (users == null) {
@@ -105,6 +110,8 @@ router.post("/", function(req, res, next){//req:姓名、电话
 				return res.status(200).json("exist");//res:已经存在该用户
 			}
 		})
+	}
+})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
@@ -116,7 +123,7 @@ router.post("/", function(req, res, next){//req:姓名、电话
  *   post:
  *     tags:
  *       - User
- *     summary: web用户禁用、启用app用户
+ *     summary: web用户禁用、启用app用户(登录权限验证)
  *     description: 用户禁用，启用
  *     produces:
  *       - application/json
@@ -131,6 +138,10 @@ router.post("/", function(req, res, next){//req:姓名、电话
  */
 //用户禁用/启用状态
 router.post("/state",function(req,res,next){
+	    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
 	var user=req.body;
 	User.update({userID:user.userID},{state:user.state},function(err,users){
 		if(err){
@@ -139,6 +150,8 @@ router.post("/state",function(req,res,next){
 			return res.status(200).json("success");//res
 		}
 	})
+}
+})
 });
 
 /**
@@ -303,6 +316,10 @@ router.post("/search/userid", function(req, res, next){//req:用户ID
 //删除指定ID用户(彻底删除)
 router.post("/delete", function(req, res, next){//req：用户ID
 	//if(req.session.admin) {
+	    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
 		var user = req.body;
 		User.remove({userID: user.userID}, function (err, users) {
 			if (err) {
@@ -320,6 +337,8 @@ router.post("/delete", function(req, res, next){//req：用户ID
 				})
 			}
 		})
+	}
+})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
@@ -487,6 +506,10 @@ router.post("/update/depart", function(req, res, next){//req:用户ID、用户�
 //根据部门名称、用户ID确认部长（先删除旧部长）
 router.post("/update/leader", function(req, res, next){//req:departName、userID
 	//if(req.session.admin) {
+		    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
 	var user = req.body;
 	Depart.findOne({departName: user.departName}, function (err, result1) {//根据部门名找到部门ID：result1.departID
 		if (result1 == null) {
@@ -537,6 +560,8 @@ router.post("/update/leader", function(req, res, next){//req:departName、userID
 			})
 		}
 	})
+}
+})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
@@ -679,6 +704,10 @@ router.post("/add/staff", function(req, res, next){//req:departName、userPhone
 //管理员将员工从相应部门删除（还保留在公司人才库）
 router.post("/remove/staff", function(req, res, next){//req:userID
 	//if(req.session.admin) {
+	    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  if(r==null){
+    return res.status(200).json("admin login first");
+  }else{
 		var user = req.body;
 		User.update({userID: user.userID}, {userDepart: 0, DepartName: "null"}, function (err, result2) {//修改用户的部门信息
 			if (err) {
@@ -688,6 +717,8 @@ router.post("/remove/staff", function(req, res, next){//req:userID
 				return res.status(200).json("success");//res
 			}
 		})
+	}
+})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}

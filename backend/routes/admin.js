@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var Admin = require('../models/admin');//定义User获取之前建立的User数据模型
 var session = require('express-session');
+var Safe = require('../models/safe');
 
 /**
  * @swagger
@@ -11,6 +12,17 @@ var session = require('express-session');
  *       adminPhone:
  *         type: string
  *       adminPwd:
+ *         type: string
+ */
+
+ /**
+ * @swagger
+ * definition:
+ *   Safe:
+ *     properties:
+ *       adminPhone:
+ *         type: string
+ *       adminState:
  *         type: string
  */
 
@@ -122,7 +134,30 @@ router.post("/login", function(req, res, next){//req:帐号、密码
 				//req.session.save();
 				//console.log(req.sessionID);
 				//console.log(req.session);
-				return res.status(200).json("success");//res
+				//将信息更新至safe模型(若有记录，则更改状态，若无则新建记录)
+				Safe.findOne({adminPhone:admin.adminPhone},function(e,r){
+					if(r==null){
+						var s={
+							"adminPhone":admin.adminPhone,
+							"adminState":"on"
+						};
+						Safe.create(s,function(e1,r1){
+							if(e1){
+								return res.status(400).send("err in post /admin/login");
+							}else{
+								return res.status(200).json("success");
+							}
+						})
+					}else{
+						Safe.update({adminPhone:admin.adminPhone},{adminState:"on"},function(e1,r1){
+							if(e1){
+								return res.status(400).send("err in post /admin/login");
+							}else{
+								return res.status(200).json("success");
+							}
+						})
+					}
+				})
 			}
 		}
 	})
@@ -145,9 +180,17 @@ router.post("/login", function(req, res, next){//req:帐号、密码
  *           $ref: '#/definitions/Admin'
  */
 //退出登录
-router.get("/logout", function(req, res, next) {
+router.get("/logout", function(req, res, next) {//参数：adminPhone
+	var admin=req.body;
 	req.session.admin=null;
-	return res.status(200).json("admin logout");
+	Safe.update({adminPhone:admin.adminPhone},{adminState:"off"},function(e,r){
+		if(e){
+			return res.status(400).send("error");
+		}else{
+			return res.status(200).json("admin logout");
+		}
+	})
+	//return res.status(200).json("admin logout");
 });
 
 /**

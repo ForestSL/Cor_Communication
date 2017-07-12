@@ -3,6 +3,7 @@ var router = express.Router();//定义router获取Router()方法库
 var Bulletin = require('../models/bulletin');//定义Bulletin获取之前建立的Bulletin数据模型
 var Depart = require('../models/depart');
 var session = require('express-session');
+var Safe = require('../models/safe');
 
 /**
  * @swagger
@@ -53,9 +54,13 @@ router.post("/", function(req, res, next){//req:departName,name,content,time,htm
 	//console.log(req.sessionID);
 	//console.log(req.session);
 	//if(req.session.admin) {
-		var bulletin = req.body;
-		//var promise = new mongoose.Promise();
-		Depart.findOne({departName: bulletin.departName}, function (err, result) {
+	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+		if(r==null){
+			return res.status(200).json("admin login first");
+		}else{
+			var bulletin = req.body;
+			//var promise = new mongoose.Promise();
+			Depart.findOne({departName: bulletin.departName}, function (err, result) {
 			//var promise = new mongoose.Promise();
 			//promise.resolve(err, result);
 			console.log(result);
@@ -72,7 +77,9 @@ router.post("/", function(req, res, next){//req:departName,name,content,time,htm
 					return res.status(200).json("success");//res
 				}
 			})
-		})
+			})
+		}
+	})
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
@@ -290,6 +297,10 @@ router.post("/search/read",function(req,res,next){//参数：departName
 //删除公告：管理员
 router.post("/delete", function(req, res, next){//req:公告时间
 	//if(req.session.admin) {
+	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+	if(r==null){
+		return res.status(200).json("admin login first");
+	}else{
 	var bulletin = req.body;
 	console.log(bulletin.time);
 	Bulletin.remove({ time: bulletin.time }, function(err, bulletins){
@@ -302,6 +313,8 @@ router.post("/delete", function(req, res, next){//req:公告时间
 			//console.log(bulletins);
 			return res.status(200).json("success");//res
 		}
+	})
+	}
 	})
 	//}else{
 		//return res.status(200).json("admin login first");
@@ -332,6 +345,10 @@ router.post("/delete", function(req, res, next){//req:公告时间
 //修改公告
 router.post("/update", function(req, res, next){//req:上次的时间lasttime、新公告
 	//if(req.session.admin) {
+	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+	if(r==null){
+		return res.status(200).json("admin login first");
+	}else{
 	var bulletin = req.body;
 		//删除旧公告
 	Bulletin.remove({ time: bulletin.lasttime }, function(err, bulletins){
@@ -360,7 +377,8 @@ router.post("/update", function(req, res, next){//req:上次的时间lasttime、
 			})
 		}
 	})
-		
+	}
+	})	
 	//}else{
 		//return res.status(200).json("admin login first");
 	//}
