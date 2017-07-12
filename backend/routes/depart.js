@@ -50,20 +50,86 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
 		var depart = req.body;
 		Depart.findOne({departName: depart.departName}, function (err, departs) {//先看是否已经存在该部门
 			if (departs == null) {
+				//判断是否count为空
+				Count.findOne({},function(e,r){
+					console.log(r);
+					if(r == null){//为空新建一条记录再更新
+						console.log("1");
+						Count.create(depart,function(e1,r1){
+							//todo
+							//查找部门ID当前数量
+							Count.findOne({}, function (err, counts) {
+								//Count.departNum = Count.departNum+1;//部门数加一
+								depart.departID = counts.departNum + 1;//获得部门ID
+								//console.log(Count.departNum);			
+								//更新部门Num
+								Count.update({}, {departNum: counts.departNum + 1}, function (err, result) {
+									console.log("部门ID加一");
+									//根据父部门名字查找父部门ID
+									Depart.findOne({departName: depart.parentName}, function (err, result) {
+										if (result == null) {
+											depart.parentID = 0;
+										} else {
+											depart.parentID = result.departID;//获得父部门ID
+										}
+										console.log(depart);
+
+										Depart.create(depart, function (err, depart) {
+											if (err) {
+												return res.status(400).send("err in post /depart");
+											} else {
+												return res.status(200).json("success");//res
+											}
+										})
+									})
+								})
+							})
+						})
+					}else{
+						//todo
+						//查找部门ID当前数量
+						console.log("2");
+						Count.findOne({}, function (err, counts) {
+							//Count.departNum = Count.departNum+1;//部门数加一
+							depart.departID = counts.departNum + 1;//获得部门ID
+							//console.log(Count.departNum);			
+							//更新部门Num
+							Count.update({}, {departNum: counts.departNum + 1}, function (err, result) {
+								console.log("部门ID加一");
+								//根据父部门名字查找父部门ID
+								Depart.findOne({departName: depart.parentName}, function (err, result) {
+									if (result == null) {
+										depart.parentID = 0;
+									} else {
+										depart.parentID = result.departID;//获得父部门ID
+									}
+									console.log(depart);
+
+									Depart.create(depart, function (err, depart) {
+										if (err) {
+											return res.status(400).send("err in post /depart");
+										} else {
+											return res.status(200).json("success");//res
+										}
+									})
+								})
+							})
+						})
+					}
+				})
 				//查找部门ID当前数量
-				Count.findOne({}, function (err, counts) {
+				/*Count.findOne({}, function (err, counts) {
 					//Count.departNum = Count.departNum+1;//部门数加一
 					depart.departID = counts.departNum + 1;//获得部门ID
-					//console.log(Count.departNum);
-
+					//console.log(Count.departNum);			
 					//更新部门Num
 					Count.update({}, {departNum: counts.departNum + 1}, function (err, result) {
 						console.log("部门ID加一");
 					})
-				})
+				})*/
 
 				//根据父部门名字查找父部门ID
-				Depart.findOne({departName: depart.parentName}, function (err, result) {
+				/*Depart.findOne({departName: depart.parentName}, function (err, result) {
 					if (result == null) {
 						depart.parentID = 0;
 					} else {
@@ -78,7 +144,7 @@ router.post("/", function(req, res, next){//req:部门名字(后台自动生成I
 							return res.status(200).json("success");//res
 						}
 					})
-				})
+				})*/
 			}
 			else {
 				return res.status(200).json("exist");//res:已经存在该部门
@@ -323,7 +389,7 @@ router.post("/update/name", function(req, res, next){//req:部门ID、新名字
 									if(err){
 										return res.status(400).send("err in post /depart/update/name");
 									}else {
-										return res.status(200).send("success");
+										return res.status(200).json("success");
 										console.log("update success");
 									}
 									//return res.status(200).send("success");

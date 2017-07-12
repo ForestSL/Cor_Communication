@@ -9,6 +9,10 @@ var CountSchema = new mongoose.Schema({
   userNum: {
     type: Number,
     default: 0
+  },
+  deployNum:{
+  	type:Number,
+  	default:0
   }
 });
 

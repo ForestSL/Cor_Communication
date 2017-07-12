@@ -1,27 +1,35 @@
 var express = require('express');
 var router = express.Router();//定义router获取Router()方法库
 var request = require('request');
-var Vacation = require('../models/vacation');
+var Task = require('../models/Task');
+var Deploy = require('../models/Deploy');
 var User = require('../models/user');
 var Depart = require('../models/depart');
+var Count = require('../models/count');
 
 var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
 
 /**
  * @swagger
  * definition:
- *   Vacation:
+ *   Task:
  *     properties:
- *       userID:
+ *       name:
  *         type: string
+ *       userID:
+ *         type: number
  *       userName:
  *         type: string
  *       processID:
- *         type: string
+ *         type: number
  *       state:
  *         type: string
  *       result:
  *         type: string
+ *       content:
+ *         type: string
+ *       receiver:
+ *         type: number
  */
 
 /**
@@ -29,7 +37,7 @@ var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
  * /task:
  *   get:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: 返回所有请假相关信息
  *     description: 返回所有请假任务
  *     produces:
@@ -38,11 +46,11 @@ var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
  *       200:
  *         description: 所有请假任务
  *         schema:
- *           $ref: '#/definitions/Vacation'
+ *           $ref: '#/definitions/Task'
  */
-//查看vacation数据
+//查看task数据
 router.get("/", function(req, res, next){//无参数
-  Vacation.find({}, function(err, tests){
+  Task.find({}, function(err, tests){
     if(err){
       return res.status(400).send("err in get /task");
     }else{
@@ -59,7 +67,7 @@ router.get("/", function(req, res, next){//无参数
  * /task/vacation/request:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户启动请假流程
  *     description: 用户启动请假流程
  *     produces:
@@ -112,7 +120,7 @@ router.post('/vacation/request', function(req, res){//参数：userID,userName,n
 
                     //存储到数据库
                       vacation.processID = processInstanceId;
-                      Vacation.create(vacation, function(err, vas){
+                      Task.create(vacation, function(err, vas){
                       if (err) {
                         console.log("err in post /task/vacation/request");
                         //return res.status(400).send("err in post /task/vacation/request");
@@ -201,7 +209,7 @@ router.post('/vacation/request', function(req, res){//参数：userID,userName,n
  * /task/vacation/list:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户当前已有任务列表
  *     description: 用户当前任务列表
  *     produces:
@@ -213,19 +221,19 @@ router.post('/vacation/request', function(req, res){//参数：userID,userName,n
  *         required: true
  *     responses:
  *       200:
- *         description: 所有vacation对象数据
+ *         description: 所有Task对象数据
  *         schema:
- *           $ref: '#/definitions/Vacation'
+ *           $ref: '#/definitions/Task'
  */
 //用户当前已有任务列表
 router.post('/vacation/list', function(req, res){//参数：userID
   var user = req.body;
-  Vacation.find({userID:user.userID}, function(err, tests){
+  Task.find({userID:user.userID}, function(err, tests){
     if(err){
       return res.status(400).send("err in get /task");
     }else{
       console.log(tests);
-      return res.status(200).json(tests);//返回值：包含userID,userName,processID,state,result,numOfDays,startTime,motivation的对象数组
+      return res.status(200).json(tests);//返回值：包含name,userID,userName,processID,state,result,numOfDays,startTime,motivation等的对象数组
     }
   })
 })
@@ -235,7 +243,7 @@ router.post('/vacation/list', function(req, res){//参数：userID
  * /task/vacation/list/detail:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户点击任务列表查看详情
  *     description: 任务详情
  *     produces:
@@ -249,7 +257,7 @@ router.post('/vacation/list', function(req, res){//参数：userID
  *       200:
  *         description: 任务对象数据
  */
-//点击列表查看任务详情
+//app用户根据name点击列表查看请假任务详情
 router.post('/vacation/list/detail', function(req, res){//参数：processID
     var pa = req.body;
     var method = "GET";
@@ -281,7 +289,7 @@ router.post('/vacation/list/detail', function(req, res){//参数：processID
  * /task/vacation/handle/list:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户当前待处理任务列表
  *     description: 待处理任务
  *     produces:
@@ -328,7 +336,7 @@ router.post('/vacation/handle/list', function(req, res){//参数：userID
  * /task/vacation/handle/detail:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户点击待处理任务列表查看详情
  *     description: 待处理任务详情
  *     produces:
@@ -373,7 +381,7 @@ router.post('/vacation/handle/detail', function(req, res){//参数：id
  * /task/vacation/handlerequest:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户处理Handle vacation request任务
  *     description: 处理任务
  *     produces:
@@ -406,7 +414,7 @@ router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(
           console.log(data.processInstanceId);//获取流程实例id
           //res.json(data);
           if(mytask.approve=="false"){//拒绝请假
-            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"disapprove"}, function (err, vas) {
+            Task.update({processID: data.processInstanceId}, {state: "running",result:"disapprove"}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/handlerequest");
               } else {
@@ -447,7 +455,7 @@ router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(
               }
             })
           }else if(mytask.approve=="true"){//同意请假
-            Vacation.update({processID: data.processInstanceId}, {state: "complete",result:"approve"}, function (err, vas) {
+            Task.update({processID: data.processInstanceId}, {state: "complete",result:"approve"}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/handlerequest");
               } else {
@@ -503,7 +511,7 @@ router.post('/vacation/handlerequest', function(req, res){//参数：id,approve(
  * /task/vacation/adjustrequest:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户处理Adjust vacation request任务
  *     description: 处理任务
  *     produces:
@@ -537,7 +545,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
           //res.json(data);
           //更新数据模型
           if(mytask.send=="false"){//不再重发
-            Vacation.update({processID: data.processInstanceId}, {state: "complete",result:"disapprove"}, function (err, vas) {
+            Task.update({processID: data.processInstanceId}, {state: "complete",result:"disapprove"}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/adjustrequest");
               } else {
@@ -585,7 +593,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
               }
             })
           }else if(mytask.send == "true"){//重发
-            Vacation.update({processID: data.processInstanceId}, {state: "running",result:"waiting",
+            Task.update({processID: data.processInstanceId}, {state: "running",result:"waiting",
               numOfDays:mytask.numOfDays,startTime:mytask.startTime,motivation:mytask.motivation}, function (err, vas) {
               if (err) {
                 return res.status(400).send("err in post /task/vacation/adjustrequest");
@@ -716,7 +724,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
  * /task/vacation/delete:
  *   post:
  *     tags:
- *       - Vacation
+ *       - Task
  *     summary: app用户删除任务列表中的任务
  *     description: 删除任务
  *     produces:
@@ -733,7 +741,7 @@ router.post('/vacation/adjustrequest', function(req, res){//参数：userID,id,n
 //删除用户列表任务
 router.post('/vacation/delete',function(req,res){//参数：processID
   var user=req.body;
-  Vacation.remove({processID:user.processID},function(err,users){
+  Task.remove({processID:user.processID},function(err,users){
     if(err){
       return res.status(400).send("err in post /task/vacation/delete");
     }else{
@@ -744,243 +752,175 @@ router.post('/vacation/delete',function(req,res){//参数：processID
 
 //---------------------------------部署--------------------------------------
 
-//获取部署列表(无参数)
-router.get('/deploy/all', function(req, res){
-    var method = "GET";
-    var proxy_url = baseUrl+"repository/deployments";
+ /**
+ * @swagger
+ * definition:
+ *   Deploy:
+ *     properties:
+ *       name:
+ *         type: string
+ *       file:
+ *         type: string
+ */
 
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 200) {
-          console.log('部署总数：',data.total);
-          //console.log('部署列表：',data.data[0].id);
-          console.log('部署列表：',data.data);
-          res.json(data);
-        }
+ /**
+ * @swagger
+ * /task/deploy:
+ *   get:
+ *     tags:
+ *       - Deploy
+ *     summary: 返回所有请假相关信息
+ *     description: 返回所有请假任务
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: 所有请假任务
+ *         schema:
+ *           $ref: '#/definitions/Deploy'
+ */
+//获取部署列表(无参数)：web端/app端提供可选择的任务name
+router.get('/deploy', function(req, res){
+  Deploy.find({}, function(err, tests){
+    if(err){
+      return res.status(400).send("err in get /task/deploy");
+    }else{
+      console.log(tests);
+      return res.status(200).json(tests);//res:包含name、file的对象
     }
-    request(options, callback);
-})
+  })
+});
 
-//流程部署(参数：deployFile)
+//流程部署(参数：name,file):web端
 router.post('/deploy/upload', function(req, res){
-    var deploy=req.body;
-    var method = "POST";
-    var proxy_url = baseUrl+"repository/deployments";
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true,
-        body: deploy.deployFile//流程文件 关于参数形式？？？
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 201) {
-          console.log('部署ID：',data.id);
-          console.log('部署详情：',data);
-          res.json(data);
-        }
-        if (!error && response.statusCode == 400) {
-          console.log(' there was no content present in the request body or the content mime-type is not supported for deployment');
-          res.json('wrong');
-        }
+  var deploy=req.body;
+  //判断deploy是否为空，空就先创建一条请假部署记录
+  Deploy.findOne({},function(e,r){
+    if(r==null){
+      var va={
+        "name":"vacation",
+        "file":"default"
+      };
+      Deploy.create(va,function(e1,r1){
+        console.log("vacation added.");
+      })
     }
-    request(options, callback);
-})
+    //创建新的部署
+    Deploy.create(deploy,function(e1,r1){
+      if (e1) {
+        return res.status(400).send("error");
+      } else {
+        return res.status(200).json("success");//res
+      }
+    })
+  })
+});
 
-//---------------------------------实例--------------------------------------
-
-//获取流程实例列表(无参数)
-router.get('/processinstance/all', function(req, res){
-    var method = "GET";
-    var proxy_url = baseUrl+"runtime/process-instances";
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 200) {
-          console.log('流程实例总数：',data.total);
-          console.log('流程实例列表：',data.data);
-          res.json(data.data);
-        }
-        if (!error && response.statusCode == 400) {
-          console.log('a parameter was passed in the wrong format!');
-          res.json('wrongparameter');
-        }
+//删除部署列表(参数：name)
+router.post('deploy/delete',function(req,res){
+  var deploy=req.body;
+  Deploy.remove({name:deploy.name},function(err,result){
+    if(err){
+      return res.status(400).send("error");
+    }else{
+      return res.status(200).json("success");//res
     }
-    request(options, callback);
-})
+  })
+});
 
-//删除一个流程实例(参数：流程实例号processInstanceId)
-router.post('/processinstance/delete', function(req, res){
-    var myprocess=req.body;
-    var method = "DELETE";
-    var proxy_url = baseUrl+"runtime/process-instances/"+myprocess.processInstanceId;
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 204) {
-          console.log('delete successfully!');
-            res.json('success');
-        }
-        if (!error && response.statusCode == 404) {
-          console.log('the requested process instance was not found!');
-          res.json('notfound');
-        }
+//删除流程列表(参数：processID)
+router.post('/process/delete',function(req,res){
+  var myprocess=req.body;
+  Task.findOne({processID:myprocess.processID},function(err,result){
+    if(err){
+      return res.status(400).send("error");
+    }else{
+      if(result==null){
+        return res.status(200).json("notexist");
+      }else if(result.state=="running"){
+        return res.status(200).json("stillrunning");
+      }else{
+        //删除数据
+        Task.remove({processID:myprocess.processID},function(err1,result1){
+          if(err1){
+            return res.status(400).send("error");
+          }else{
+            return res.status(200).json("success");
+          }
+        })
+      }
     }
-    request(options, callback);
-})
+  })
+});
 
-//获得流程实例的流程图(参数：流程实例号processInstanceId)???
-router.post('/processinstance/flow', function(req, res){
-    var myprocess=req.body;
-    var method = "GET";
-    var proxy_url = baseUrl+"runtime/process-instances/"+myprocess.processInstanceId;
+//---------------------------------其他任务--------------------------------------
 
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 200) {
-          console.log('实例流程图：',data);
-          res.json(data);
+//app端启动对应name的任务(参数：name,userID,userName,content,receiver),processID自动生成
+router.post('/other/request',function(req,res){
+  var other=req.body;
+  //根据Count数据模型自动生成processID
+  Count.findOne({}, function (err, counts) {
+    other.processID=counts.deployNum+1;
+    Count.update({}, {deployNum: counts.deployNum + 1}, function (err, result){
+      console.log("deployNum加一");
+      //新建任务记录
+      Task.create(other, function (err, result) {
+        if (err) {
+          return res.status(400).send("error");
+        } else {
+          return res.status(200).json("success");//返回值
         }
-        if (!error && response.statusCode == 400) {
-          console.log(data);
-          res.json('notfound');
-        }
+      })
+    })
+  })
+});
+
+//点击查看非请假任务详情(参数：processID)
+router.post('/other/detail',function(req,res){
+  var other=req.body;
+  Task.findOne({processID:other.processID},function(err,result){
+    if(err){
+      return res.status(400).send("error");
+    }else{
+      return res.status(200).json(result);//返回值
     }
-    request(options, callback);
-})
+  })
+});
 
-//获取历史流程实例
-router.get('/process/history/all', function(req, res){
-    var method = "GET";
-    var proxy_url = baseUrl+"history/historic-process-instances";
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-      console.log(data);
-        if (!error && response.statusCode == 200) {
-          console.log('历史流程：',data);
-          res.json(data.data);
-        }
-        if (!error && response.statusCode == 400) {
-          console.log(data);
-          res.json('error');
-        }
+//用户待处理的非请假任务列表,与请假待处理同用(参数：userID)
+router.post('/other/handle/list',function(req,res){
+  var other=req.body;
+  Task.find({receiver:other.userID},function(err,result){
+    if(err){
+      return res.status(400).send("error");
+    }else{
+      return res.status(200).json(result);//返回值:数组
     }
-    request(options, callback);
-})
+  })
+});
 
-//---------------------------------任务--------------------------------------
-
-//获取任务列表
-router.get('/tasks/all', function(req, res){
-    var method = "GET";
-    var proxy_url = baseUrl+"runtime/tasks";
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 200) {
-          console.log('任务列表：',data);
-          res.json(data.data);
-        }
-        if (!error && response.statusCode == 400) {
-          console.log(data);
-          res.json('error');
-        }
+//查看待处理的非请假任务详情(参数：processID)
+router.post('/other/handle/detail',function(req,res){
+  var other=req.body;
+  Task.findOne({processID:other.processID},function(err,result){
+    if(err){
+      return res.status(400).send("error");
+    }else{
+      return res.status(200).json(result);//返回值：对象
     }
-    request(options, callback);
-})
+  })
+});
 
-//删除任务(参数：任务号taskId)
-router.post('/tasks/delete', function(req, res){
-    var mytask = req.body;
-    var method = "DELETE";
-    var proxy_url = baseUrl+"runtime/tasks/"+mytask.taskId;
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-        if (!error && response.statusCode == 204) {
-          console.log('删除成功：',data);
-          res.json('success');
-        }
-        if (!error && response.statusCode == 403) {
-          console.log(data);
-          res.json('cannotdelete');
-        }
-        if (!error && response.statusCode == 404) {
-          console.log(data);
-          res.json('notfound');
-        }
-    }
-    request(options, callback);
-})
-
-//获取历史任务
-router.get('/tasks/history/all', function(req, res){
-    var method = "GET";
-    var proxy_url = baseUrl+"history/historic-task-instances";
-
-    var options = {
-      headers: {"Connection": "close"},
-        url: proxy_url,
-        method: method,
-        json: true
-    };
-
-    function callback(error, response, data) {
-      console.log(data);
-        if (!error && response.statusCode == 200) {
-          console.log('历史任务：',data);
-          res.json(data.data);
-        }
-        if (!error && response.statusCode == 400) {
-          console.log(data);
-          res.json('error');
-        }
-    }
-    request(options, callback);
-})
+//处理非请假任务(参数：processID,result(approve/disapprove),motivation)
+router.post('/other/handle',function(req,res){
+  var other=req.body;
+  Task.update({processID:other.processID},{state:"complete",result:other.result,motivation:other.motivation},function(err,result){
+    if(err){
+       return res.status(400).send("error");
+     }else{
+        return res.status(200).json("success");//返回值
+     }
+  })
+});
 
 module.exports = router;
