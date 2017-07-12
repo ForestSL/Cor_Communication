@@ -751,6 +751,31 @@ router.post('/vacation/delete',function(req,res){//参数：processID
   })
 })
 
+router.post('/vacation/pic',function(req,res){
+    var myprocess=req.body;
+    var method = "GET";
+    var proxy_url = baseUrl+"/process-instance/"+myprocess.processID+"/diagram";
+
+    var options = {
+      headers: {"Connection": "close"},
+        url: proxy_url,
+        method: method,
+        json: true
+    };
+
+    function callback(error, response, data) {
+        if (!error && response.statusCode == 200) {
+          console.log(data);
+          res.json(data);//返回值：
+        }
+        if (!error && response.statusCode == 404) {
+          console.log(data);
+          res.json("notfound");//返回值：notfound
+        }
+    }
+    request(options, callback); 
+});
+
 //---------------------------------部署--------------------------------------
 
  /**
