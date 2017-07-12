@@ -186,7 +186,7 @@ router.delete("/", function(req, res, next){
  *   get:
  *     tags:
  *       - User
- *     summary: 返回所有用户信息(登录权限验证)
+ *     summary: 返回所有用户信息
  *     description: 返回所有用户
  *     produces:
  *       - application/json
@@ -218,7 +218,7 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - User
- *     summary: 查找部门所有员工(登录权限验证)
+ *     summary: 查找部门所有员工
  *     description: 根据部门ID查找用户
  *     produces:
  *       - application/json
@@ -258,7 +258,7 @@ router.post("/search/departid", function(req, res, next){//req:部门ID
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID返回用户所有信息(登录权限验证)
+ *     summary: 根据用户ID返回用户所有信息
  *     description: 用户ID查找用户信息
  *     produces:
  *       - application/json
@@ -350,7 +350,7 @@ router.post("/delete", function(req, res, next){//req：用户ID
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID以及新密码修改密码(登录权限验证)
+ *     summary: 根据用户ID以及新密码修改密码
  *     description: 根据ID修改密码
  *     produces:
  *       - application/json
@@ -410,7 +410,7 @@ router.post("/update/pwd", function(req, res, next){//req:userID,userPhone,oldPw
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID以及新名字修改信息(登录权限验证)
+ *     summary: 根据用户ID以及新名字修改信息
  *     description: 根据ID修改名字
  *     produces:
  *       - application/json
@@ -446,40 +446,6 @@ router.post("/update", function(req, res, next){//req:用户ID、用户新名字
 	//}else{
 		//return res.status(200).json("user login first");
 	//}
-});
-
-/**
- * @swagger
- * /user/update/depart:
- *   post:
- *     tags:
- *       - User
- *     summary: 根据用户ID修改部门【暂未使用】
- *     description: 根据ID修改部门
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: user(userID userDepart)
- *         description: User object
- *         in: body
- *         required: true
- *         schema:
- *           $ref: '#/definitions/User'
- *     responses:
- *       200:
- *         description: success
- */
-//根据ID更新用户部门：管理员
-router.post("/update/depart", function(req, res, next){//req:用户ID、用户新部门
-	var user=req.body;
-	User.update({ userID: user.userID},{userDepart:user.userDepart}, function(err, users){
-		if(err){
-			return res.status(400).send("err in post /user");
-		}else{
-			console.log("更新成功");
-			return res.status(200).json("success");//res
-		}
-	})
 });
 
 /**
@@ -641,7 +607,7 @@ router.get("/logout", function(req, res, next) {
  *   post:
  *     tags:
  *       - User
- *     summary: 管理员将员工添加到相应部门(登录权限验证)
+ *     summary: 管理员将员工添加到相应部门
  *     description: 添加员工到部门
  *     produces:
  *       - application/json
