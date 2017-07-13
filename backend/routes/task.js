@@ -751,10 +751,11 @@ router.post('/vacation/delete',function(req,res){//参数：processID
   })
 })
 
+//获取流程图（拿不到图？？？）
 router.post('/vacation/pic',function(req,res){
     var myprocess=req.body;
     var method = "GET";
-    var proxy_url = baseUrl+"/process-instance/"+myprocess.processID+"/diagram";
+    var proxy_url = baseUrl+"runtime/process-instances/"+myprocess.processID;
 
     var options = {
       headers: {"Connection": "close"},
@@ -766,7 +767,7 @@ router.post('/vacation/pic',function(req,res){
     function callback(error, response, data) {
         if (!error && response.statusCode == 200) {
           console.log(data);
-          res.json(data);//返回值：
+          res.json(data);//返回值
         }
         if (!error && response.statusCode == 404) {
           console.log(data);

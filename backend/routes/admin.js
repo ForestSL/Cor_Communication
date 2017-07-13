@@ -3,6 +3,7 @@ var router = express.Router();//定义router获取Router()方法库
 var Admin = require('../models/admin');//定义User获取之前建立的User数据模型
 var session = require('express-session');
 var Safe = require('../models/safe');
+var crypto = require('crypto');//加密解密
 
 /**
  * @swagger
@@ -51,6 +52,12 @@ var Safe = require('../models/safe');
  */
 router.post("/", function(req, res, next){//req
 	var admin = req.body;
+	//加密
+		var md5 = crypto.createHash('md5');
+		md5.update(admin.adminPwd);//管理员初始密码
+		admin.adminPwd = md5.digest('hex');  //加密的密码
+		console.log(admin.adminPwd);
+
 	Admin.findOne({ adminPhone: admin.adminPhone}, function(err, admins){//先看是否已经存在该部门
 		if(admins==null){
 			Admin.create(admin, function(err, admin){
@@ -120,6 +127,12 @@ router.get("/", function(req, res, next){//无参数
 //登录
 router.post("/login", function(req, res, next){//req:帐号、密码
 	var admin=req.body;
+		//加密
+		var md5 = crypto.createHash('md5');
+		md5.update(admin.adminPwd);//管理员初始密码
+		admin.adminPwd = md5.digest('hex');  //加密的密码
+		console.log(admin.adminPwd);
+		
 	Admin.findOne({ adminPhone: admin.adminPhone,adminPwd:admin.adminPwd}, function(err, admins){
 		if(err){
 			return res.status(400).send("err in post /admin/login");

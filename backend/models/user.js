@@ -14,10 +14,7 @@ var UserSchema = new mongoose.Schema({
     default: "null"
   },
   userPhone: String,
-  userPwd: {
-    type:String,
-    default:"000000"
-  },
+  userPwd: String,
   userDepart: {
     type: Number,
     default: 0

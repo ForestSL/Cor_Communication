@@ -5,6 +5,7 @@ var Depart = require('../models/depart');//定义Depart获取之前建立的Depa
 var Count = require('../models/count');
 var request = require('request');
 var Safe = require('../models/safe');
+var crypto = require('crypto');//加密解密
 
 /**
  * @swagger
@@ -60,6 +61,12 @@ router.post("/", function(req, res, next){//req:姓名、电话
     	return res.status(200).json("admin login first");
   	}else{
 		var user = req.body;
+		//加密
+		var md5 = crypto.createHash('md5');
+		md5.update("000000");
+		user.userPwd = md5.digest('hex');  //加密的密码
+		console.log(user.userPwd);
+
 		User.findOne({userPhone: user.userPhone}, function (err, users) {//根据帐号（电话）先看是否已经存在该用户
 			if (users == null) {
 				//查找部门ID当前数量
@@ -91,7 +98,7 @@ router.post("/", function(req, res, next){//req:姓名、电话
             					json: true,
             					body: [{
           						"username":user.userPhone,
-          						"password":user.userPwd,
+          						"password":"000000",//默认初始密码
           						"nickname":user.userName
           						}]
           					};
@@ -369,7 +376,14 @@ router.post("/delete", function(req, res, next){//req：用户ID
 router.post("/update/pwd", function(req, res, next){//req:userID,userPhone,oldPwd,newPwd
 	//if(req.session.user) {
 		var user = req.body;
-		User.update({userID: user.userID}, {userPwd: user.newPwd}, function (err, users) {
+		//加密
+		var md5 = crypto.createHash('md5');
+		md5.update(user.newPwd);
+		user.md5Pwd = md5.digest('hex');  //加密的密码
+		console.log(user.newPwd);//极光存储的原密码
+		console.log(user.md5Pwd );//数据库存储加密后的密码
+
+		User.update({userID: user.userID}, {userPwd: user.md5Pwd}, function (err, users) {
 			if (err) {
 				return res.status(400).send("err in post /user/update/pwd");
 			} else {
@@ -557,6 +571,12 @@ router.post("/update/leader", function(req, res, next){//req:departName、userID
 //登录
 router.post("/login", function(req, res, next){//req:用户电话（帐号）、密码
 	var user=req.body;
+	//密码加密再验证
+		var md5 = crypto.createHash('md5');
+		md5.update(user.userPwd);
+		user.userPwd = md5.digest('hex');  //加密的密码
+		console.log(user.userPwd);
+
 	User.findOne({ userPhone: user.userPhone,userPwd:user.userPwd}, function(err, users){
 		if(err){
 			return res.status(400).send("err in post /user");
