@@ -339,7 +339,7 @@ router.post("/delete", function(req, res, next){//req：用户ID
 					if(err){
 						return res.status(400).send("err in post /user/delete");
 					}else{
-						return res.status(200).send("success");
+						return res.status(200).json("success");
 					}
 				})
 			}
@@ -650,6 +650,9 @@ router.post("/add/staff", function(req, res, next){//req:departName、userPhone
 			if (err) {
 				return res.status(400).send("err in post /user/add/staff");
 			} else {
+				if(result1==null){
+					return res.status(200).json("notfound");//res
+				}else{
 				User.update({userPhone: user.userPhone}, {userDepart: result1.departID, DepartName: user.departName},
 					function (err, result2) {//修改用户的部门信息
 						if (err) {
@@ -659,6 +662,7 @@ router.post("/add/staff", function(req, res, next){//req:departName、userPhone
 							return res.status(200).json("success");//res
 						}
 					})
+				}
 			}
 		})
 	//}else{
