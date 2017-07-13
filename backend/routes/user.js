@@ -339,26 +339,7 @@ router.post("/delete", function(req, res, next){//req：用户ID,userPhone
 					if(err){
 						return res.status(400).send("err in post /user/delete");
 					}else{
-						//return res.status(200).json("success");
-						//--极光推送删除用户
-          					var method = "DELETE";
-          					var proxy_url = "https://api.im.jpush.cn/v1/users/"+user.userPhone;
-
-          					var b=new Buffer("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213");
-							var base64_auth_string=b.toString('base64');
-          					var options = {
-            					headers: {"Authorization": "Basic "+base64_auth_string},
-            					url: proxy_url,
-            					method: method,
-            					json: true
-          					};
-
-          					function callback(error, response, data) {
-            					console.log(data);    
-            					return res.status(200).json("success");//res       					
-            				}
-          					request(options, callback);
-          					//--极光推送删除用户
+						return res.status(200).json("success");
 
 					}
 				})
@@ -520,7 +501,7 @@ router.post("/update/leader", function(req, res, next){//req:departName、userID
 				if (result2 == null){
 					return res.status(200).json("no user");
 				}else{
-					User.update({DepartName: user.departName}, {isLeader: 0}, function (err, result3) {//把该部门下所有员工设为普通员工
+					User.update({DepartName: user.departName}, {$set:{isLeader: 0}},{upsert: false, multi: true}, function (err, result3) {//把该部门下所有员工设为普通员工
 						if (err) {
 							return res.status(400).send("err in post /user/update/leader");
 						} else {
@@ -610,7 +591,7 @@ router.post("/login", function(req, res, next){//req:用户电话（帐号）、
 				req.session.user=user;
 				//return res.status(200).json(users);//res
 				//判断用户状态on、off
-				if(users.state=="off")
+				if(users.state=="禁用")
 					return res.status(200).json("forbidden");//res
 				else
 					return res.status(200).json(users);//res

@@ -29,8 +29,8 @@ var UserSchema = new mongoose.Schema({
   },//部长部门ID，普通部员为0
   state:{
     type: String,
-    default: "on"
-  }//用户状态，启用on，禁用off
+    default: "启用"
+  }//用户状态，启用，禁用
 });
 
 //数据模型UserSchema通过User方法名，可被其他module调用
