@@ -321,9 +321,9 @@ router.post("/search/userid", function(req, res, next){//req:用户ID
  *         description: success
  */
 //删除指定ID用户(彻底删除)
-router.post("/delete", function(req, res, next){//req：用户ID
+router.post("/delete", function(req, res, next){//req：用户ID,userPhone
 	//if(req.session.admin) {
-	    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+	    Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone
   if(r==null){
     return res.status(200).json("admin login first");
   }else{
@@ -339,7 +339,27 @@ router.post("/delete", function(req, res, next){//req：用户ID
 					if(err){
 						return res.status(400).send("err in post /user/delete");
 					}else{
-						return res.status(200).json("success");
+						//return res.status(200).json("success");
+						//--极光推送删除用户
+          					var method = "DELETE";
+          					var proxy_url = "https://api.im.jpush.cn/v1/users/"+user.userPhone;
+
+          					var b=new Buffer("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213");
+							var base64_auth_string=b.toString('base64');
+          					var options = {
+            					headers: {"Authorization": "Basic "+base64_auth_string},
+            					url: proxy_url,
+            					method: method,
+            					json: true
+          					};
+
+          					function callback(error, response, data) {
+            					console.log(data);    
+            					return res.status(200).json("success");//res       					
+            				}
+          					request(options, callback);
+          					//--极光推送删除用户
+
 					}
 				})
 			}
