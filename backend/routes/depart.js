@@ -197,7 +197,7 @@ router.get("/", function(req, res, next){//无参数
  *   post:
  *     tags:
  *       - Depart
- *     summary: 管理员根据部门ID返回部门所有信息(登录权限验证)
+ *     summary: 管理员根据部门ID返回部门所有信息
  *     description: 查找具体部门信息
  *     produces:
  *       - application/json
@@ -215,10 +215,6 @@ router.get("/", function(req, res, next){//无参数
 //根据部门ID返回该部门所有信息：管理员用
 router.post("/search", function(req, res, next){//req:departID
 	//if(req.session.admin) {
-	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
-	if(r==null){
-		return res.status(200).json("admin login first");
-	}else{
 	var depart=req.body;
 	Depart.find({ departID:depart.departID }, function(err, departs){
 		if(err){
@@ -227,8 +223,6 @@ router.post("/search", function(req, res, next){//req:departID
 			console.log(departs);
 			return res.status(200).json(departs);//res：部门信息
 		}
-	})
-	}
 	})
 	//}else{
 		//return res.status(200).json("admin login first");
