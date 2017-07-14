@@ -178,8 +178,8 @@ router.post("/login", function(req, res, next){//req:帐号、密码
 
 /**
  * @swagger
- * /admin:
- *   get:
+ * /admin/logout:
+ *   post:
  *     tags:
  *       - Admin
  *     summary: 管理员退出登录
@@ -193,7 +193,7 @@ router.post("/login", function(req, res, next){//req:帐号、密码
  *           $ref: '#/definitions/Admin'
  */
 //退出登录
-router.get("/logout", function(req, res, next) {//参数：adminPhone
+router.post("/logout", function(req, res, next) {//参数：adminPhone
 	var admin=req.body;
 	req.session.admin=null;
 	Safe.update({adminPhone:admin.adminPhone},{adminState:"off"},function(e,r){
