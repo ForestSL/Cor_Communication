@@ -421,11 +421,11 @@ router.post("/update/pwd", function(req, res, next){//req:userID,userPhone,oldPw
 
 /**
  * @swagger
- * /user/update/name:
+ * /user/update:
  *   post:
  *     tags:
  *       - User
- *     summary: 根据用户ID以及新名字修改信息
+ *     summary: 根据用户ID以及新名字修改信息(登陆权限验证)
  *     description: 根据ID修改名字
  *     produces:
  *       - application/json
@@ -443,6 +443,10 @@ router.post("/update/pwd", function(req, res, next){//req:userID,userPhone,oldPw
 //修改员工名字
 router.post("/update", function(req, res, next){//req:用户ID、用户新名字
 	//if(req.session.user) {
+	Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
+  	if(r==null){
+    	return res.status(200).json("admin login first");
+  	}else{
 		var user = req.body;
 		User.update({userID: user.userID}, {userName: user.userName}, function (err, users) {
 			if (err) {
@@ -458,6 +462,8 @@ router.post("/update", function(req, res, next){//req:用户ID、用户新名字
 				})
 			}
 		})
+	}
+})
 	//}else{
 		//return res.status(200).json("user login first");
 	//}
