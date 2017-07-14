@@ -208,6 +208,52 @@ router.get("/logout", function(req, res, next) {//参数：adminPhone
 
 /**
  * @swagger
+ * /admin/update/pwd:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: 修改管理员密码
+ *     description: 修改管理员密码
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: object(adminPhone，oldPwd,newPwd)
+ *         description: object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Admin'
+ *     responses:
+ *       200:
+ *         description: success
+ *       400:
+ *         description: err in post /admin/update/pwd
+ */
+//管理员修改密码
+router.post("/update/pwd", function(req, res, next){//req:adminPhone,oldPwd,newPwd
+	//if(req.session.user) {
+		var admin = req.body;
+		//加密
+		var md5 = crypto.createHash('md5');
+		md5.update(admin.newPwd);
+		admin.newPwd = md5.digest('hex');  //加密的新密码
+		console.log(admin.newPwd);
+
+		Admin.update({adminPhone: admin.adminPhone}, {adminPwd: admin.newPwd}, function (err, admins) {
+			if (err) {
+				return res.status(400).send("err in post /admin/update/pwd");
+			} else {
+				console.log("更新成功");
+				return res.status(200).json("success");//res
+			}
+		})
+	//}else{
+		//return res.status(200).json("user login first");
+	//}
+});
+
+/**
+ * @swagger
  * /admin/delete:
  *   post:
  *     tags:
