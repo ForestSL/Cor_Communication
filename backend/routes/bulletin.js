@@ -115,6 +115,42 @@ router.get("/", function(req, res, next){//无参数
 
 /**
  * @swagger
+ * /bulletin/detail:
+ *   post:
+ *     tags:
+ *       - Bulletin
+ *     summary: 根据时间返回具体一条公告
+ *     description: 返回具体一条公告
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bulletin(time)
+ *         description: Bulletin object
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ *     responses:
+ *       200:
+ *         description: 返回公告
+ *         schema:
+ *           $ref: '#/definitions/Bulletin'
+ */
+//返回具体一条公告：管理员
+router.post("/detail", function(req, res, next){//time
+	var p=req.body;
+	Bulletin.findOne({time:p.time}, function(err, bulletins){
+		if(err){
+			return res.status(400).send("err in get /bulletin/detail");
+		}else{
+			//console.log(Bulletin.count());
+			return res.status(200).json(bulletins);//res:返回公告
+		}
+	})
+});
+
+/**
+ * @swagger
  * /bulletin/search:
  *   post:
  *     tags:

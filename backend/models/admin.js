@@ -13,5 +13,5 @@ var AdminSchema = new mongoose.Schema({
   }
 });
 
-//数据模型UserSchema通过User方法名，可被其他module调用
+//数据模型AdminSchema通过Admin方法名，可被其他module调用
 module.exports = mongoose.model("Admin", AdminSchema);
