@@ -888,7 +888,7 @@ router.post('/deploy/upload', function(req, res){
  *         description: success
  */
 //删除部署列表(参数：name)
-router.post('deploy/delete',function(req,res){
+router.post('/deploy/delete',function(req,res){
     Safe.findOne({adminState:"on"},function(e,r){//是否绑定adminPhone？？？
   if(r==null){
     return res.status(200).json("admin login first");
