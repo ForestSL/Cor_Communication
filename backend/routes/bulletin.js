@@ -298,20 +298,12 @@ router.post("/search/unread/detail",function(req,res,next){//参数：time
 //用户查看已读的公告
 router.post("/search/read",function(req,res,next){//参数：departName
 	var user = req.body;
-	Bulletin.find( {departName: user.departName}, function(err, bulletins){
+	Bulletin.find( {departName: user.departName,state:"read"}, function(err, bulletins){
 		if(err){
 			return res.status(400).send("err in post /bulletin");
 		}else{
 			console.log(bulletins);
-			//return res.status(200).json(bulletins);//res:返回该部门现有已读公告
-			Bulletin.find( {state: "read"}, function(err, bts){
-				if(err){
-					return res.status(400).send("err in post /bulletin");
-				}else{
-					console.log(bts);
-					return res.status(200).json(bts);//res:返回该部门现有已读公告
-				}
-			})
+			return res.status(200).json(bulletins);//res:返回该部门现有已读公告
 		}
 	})
 });
