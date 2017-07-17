@@ -260,7 +260,14 @@ router.post("/search/unread/detail",function(req,res,next){//参数：time
 			return res.status(400).send("err in post /bulletin");
 		}else{
 			console.log(bulletins);
-			return res.status(200).json(bulletins);
+			//return res.status(200).json(bulletins);
+			Bulletin.update({time:user.time},{state:"read"},function(e,r){
+				if(e){
+					return res.status(400).send("err in post /bulletin");
+				}else{
+					return res.status(200).json(bulletins);
+				}
+			})
 		}
 	})	
 });
@@ -301,8 +308,8 @@ router.post("/search/read",function(req,res,next){//参数：departName
 				if(err){
 					return res.status(400).send("err in post /bulletin");
 				}else{
-					console.log(bulletins);
-					return res.status(200).json(bulletins);//res:返回该部门现有已读公告
+					console.log(bts);
+					return res.status(200).json(bts);//res:返回该部门现有已读公告
 				}
 			})
 		}
