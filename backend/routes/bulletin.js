@@ -211,20 +211,12 @@ router.post("/search", function(req, res, next){//req:DepartName
 //用户查看未读的公告列表
 router.post("/search/unread/list",function(req,res,next){//参数：departName
 	var user = req.body;
-	Bulletin.find( {departName: user.departName}, function(err, bulletins){
+	Bulletin.find( {departName: user.departName,state: "unread"}, function(err, bulletins){
 		if(err){
 			return res.status(400).send("err in post /bulletin");
 		}else{
 			console.log(bulletins);
-			//return res.status(200).json(bulletins);
-			Bulletin.find( {state: "unread"}, function(err, bts){
-				if(err){
-					return res.status(400).send("err in post /bulletin");
-				}else{
-					console.log(bulletins);
-					return res.status(200).json(bulletins);//res:返回该部门现有未读公告
-				}
-			})
+			return res.status(200).json(bulletins);
 		}
 	})
 });
