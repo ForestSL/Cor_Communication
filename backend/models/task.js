@@ -9,6 +9,7 @@ var TaskSchema = new mongoose.Schema({
   	userID: Number,
   	userName: String,
   	processID: Number,//请假：流程ID，其他：自动生成ID
+    id: Number,
   	state: {
   		type: String,
   		default: "running"

@@ -23,6 +23,8 @@ var baseUrl="http://kermit:kermit@115.159.38.100:8081/activiti-rest/service/";
  *         type: string
  *       processID:
  *         type: number
+ *       id:
+ *         type: number
  *       state:
  *         type: string
  *       result:
@@ -982,6 +984,7 @@ router.post('/other/request',function(req,res){
   //根据Count数据模型自动生成processID
   Count.findOne({}, function (err, counts) {
     other.processID=counts.deployNum+1;
+    other.id=other.processID;
     Count.update({}, {deployNum: counts.deployNum + 1}, function (err, result){
       console.log("deployNum加一");
       //新建任务记录
