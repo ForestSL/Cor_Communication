@@ -363,7 +363,7 @@ router.post("/delete", function(req, res, next){//req：用户ID,userPhone
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: user(userID userPwd)
+ *       - name: user(userID,userPhone,oldPwd,newPwd)
  *         description: User object
  *         in: body
  *         required: true

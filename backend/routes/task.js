@@ -1052,7 +1052,7 @@ router.post('/other/detail',function(req,res){
 //用户待处理的非请假任务列表,与请假待处理同用(参数：userID)
 router.post('/other/handle/list',function(req,res){
   var other=req.body;
-  Task.find({receiver:other.userID},function(err,result){
+  Task.find({receiver:other.userID,state:"running"},function(err,result){
     if(err){
       return res.status(400).send("error");
     }else{
@@ -1111,10 +1111,10 @@ router.post('/other/handle/detail',function(req,res){
  *       200:
  *         description: success
  */
-//处理非请假任务(参数：processID,result(approve/disapprove),motivation)
+//处理非请假任务(参数：id,result,motivation)
 router.post('/other/handle',function(req,res){
   var other=req.body;
-  Task.update({processID:other.processID},{state:"complete",result:other.result,motivation:other.motivation},function(err,result){
+  Task.update({id:other.id},{state:"complete",result:other.result,motivation:other.motivation},function(err,result){
     if(err){
        return res.status(400).send("error");
      }else{
