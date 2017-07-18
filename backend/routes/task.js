@@ -1114,6 +1114,10 @@ router.post('/other/handle/detail',function(req,res){
 //处理非请假任务(参数：id,result,motivation)
 router.post('/other/handle',function(req,res){
   var other=req.body;
+  if(other.result=="false")
+    other.result="disapprove";
+  else
+    other.result="approve";
   Task.update({id:other.id},{state:"complete",result:other.result,motivation:other.motivation},function(err,result){
     if(err){
        return res.status(400).send("error");
