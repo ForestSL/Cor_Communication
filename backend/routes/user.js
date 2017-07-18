@@ -457,7 +457,31 @@ router.post("/update", function(req, res, next){//req:用户ID、用户新名字
 						return res.status(400).send("err in post /user/update");
 					} else {
 						console.log("更新成功");
-						return res.status(200).json("success");//res
+						//return res.status(200).json("success");//res
+													//--极光推送注册
+          					var method = "POST";
+          					var proxy_url = "https://api.im.jpush.cn/v1/users";
+
+          					var b=new Buffer("c8882086c0e7d6a471b38245:27f02932ef2a6dee9d325213");
+							var base64_auth_string=b.toString('base64');
+          					var options = {
+            					headers: {"Authorization": "Basic "+base64_auth_string},
+            					url: proxy_url,
+            					method: method,
+            					json: true,
+            					body: [{
+          						"username":user.userPhone,
+          						"password":"000000",//默认初始密码
+          						"nickname":user.userName
+          						}]
+          					};
+
+          					function callback(error, response, data) {
+            					console.log(data);    
+            					return res.status(200).json("success");//res       					
+            				}
+          					request(options, callback);
+          					//--极光推送注册
 					}
 				})
 			}
