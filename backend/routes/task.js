@@ -1111,11 +1111,11 @@ router.post('/other/handle/detail',function(req,res){
  *       200:
  *         description: success
  */
-//处理非请假任务(参数：id,result,motivation)
+//处理非请假任务(参数：id,approve,motivation)
 router.post('/other/handle',function(req,res){
   var other=req.body;
-  console.log(other.result);
-  if(other.result==="false")
+  console.log(other.approve);
+  if(other.approve==="false")
     other.result="disapprove";
   else
     other.result="approve";
